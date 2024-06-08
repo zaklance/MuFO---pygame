@@ -2,7 +2,6 @@ import pygame
 
 pygame.init()
 
-
 SCREEN_WIDTH = 1600
 SCREEN_HEIGHT = 900
 
@@ -24,29 +23,25 @@ moving_up_right = False
 moving_down_left = False
 moving_down_right = False
 
-
 #define colours
 BG = (144, 201, 120)
 
 def draw_bg():
 	screen.fill(BG)
 
-
-
 class Character(pygame.sprite.Sprite):
-	# def __init__(self, char_type, x, y, scale, speed):
-	# 	pygame.sprite.Sprite.__init__(self)
-	# 	self.char_type = char_type
-	# 	self.speed = speed
-	# 	self.direction = 1
-	# 	self.flip = False
-	# 	img = pygame.image.load(f'img/{self.char_type}/Idle/0.png')
-	# 	self.image = pygame.transform.scale(img, (int(img.get_width() * scale), int(img.get_height() * scale)))
-	# 	self.rect = self.image.get_rect()
-	# 	self.rect.center = (x, y)
+	def __init__(self, char_type, x, y, scale, speed):
+		pygame.sprite.Sprite.__init__(self)
+		self.char_type = char_type
+		self.speed = speed
+		self.direction = 1
+		self.flip = False
+		img = pygame.image.load(f'img/{self.char_type}/Idle/0.png')
+		self.image = pygame.transform.scale(img, (int(img.get_width() * scale), int(img.get_height() * scale)))
+		self.rect = self.image.get_rect()
+		self.rect.center = (x, y)
 
-
-	def move(self, moving_left, moving_right, moving_up):
+	def move(self, moving_left, moving_right, moving_up, moving_down):
 		#reset movement variables
 		dx = 0
 		dy = 0
@@ -60,33 +55,30 @@ class Character(pygame.sprite.Sprite):
 			dx = self.speed
 			self.flip = False
 			self.direction = 1
-
+		if moving_up:
+			dy = -self.speed
+		if moving_down:
+			dy = self.speed
+		
 		#update rectangle position
 		self.rect.x += dx
 		self.rect.y += dy
 
-
 	def draw(self):
 		screen.blit(pygame.transform.flip(self.image, self.flip, False), self.rect)
 
-
-
-player = Soldier('player', 200, 200, 3, 5)
-enemy = Soldier('enemy', 400, 200, 3, 5)
-
-
+player = Character('player', 200, 200, 3, 5)
+enemy = Character('enemy', 400, 200, 3, 5)
 
 run = True
 while run:
-
 	clock.tick(FPS)
-
 	draw_bg()
 
 	player.draw()
 	enemy.draw()
 
-	player.move(moving_left, moving_right, moving_up)
+	player.move(moving_left, moving_right, moving_up, moving_down)
 
 	for event in pygame.event.get():
 		#quit game
@@ -98,9 +90,12 @@ while run:
 				moving_left = True
 			if event.key == pygame.K_d:
 				moving_right = True
+			if event.key == pygame.K_w:
+				moving_up = True
+			if event.key == pygame.K_s:
+				moving_down = True
 			if event.key == pygame.K_ESCAPE:
 				run = False
-
 
 		#keyboard button released
 		if event.type == pygame.KEYUP:
@@ -108,9 +103,10 @@ while run:
 				moving_left = False
 			if event.key == pygame.K_d:
 				moving_right = False
-
-
-
+			if event.key == pygame.K_w:
+				moving_up = False
+			if event.key == pygame.K_s:
+				moving_down = False
 
 	pygame.display.update()
 
