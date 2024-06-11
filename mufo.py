@@ -20,7 +20,7 @@ moving_right = False
 moving_up = False
 moving_down = False
 
-#define colours
+#define colors
 BG = (144, 201, 120)
 
 # Load background frames
@@ -34,6 +34,10 @@ for filename in sorted(os.listdir(frame_folder)):
 print(f"Loaded {len(background_frames)} frames.")
 
 current_frame = 0
+
+# Sound effects
+selector_sound = pygame.mixer.Sound("assets/sounds/effects/selector.mp3")
+selected_sound = pygame.mixer.Sound("assets/sounds/effects/selected.mp3")
 
 def draw_bg():
     global current_frame
@@ -105,12 +109,15 @@ def title_screen():
                     buttons[selected_button].selected = False
                     selected_button = (selected_button - 1) % len(buttons)
                     buttons[selected_button].selected = True
+                    selector_sound.play()
                 if event.key == pygame.K_DOWN:
                     buttons[selected_button].selected = False
                     selected_button = (selected_button + 1) % len(buttons)
                     buttons[selected_button].selected = True
+                    selector_sound.play()
                 if event.key == pygame.K_SPACE:
                     buttons[selected_button].click()
+                    selected_sound.play()
         
         pygame.display.update()
         clock.tick(FPS)
@@ -122,7 +129,7 @@ class Character(pygame.sprite.Sprite):
         self.speed = speed
         self.direction = 1
         self.flip = False
-        img_path = f'assets/img/{self.char_type}/idle/0.jpeg'
+        img_path = f'assets/img/{self.char_type}/idle/0.png'
         img = pygame.image.load(img_path)
         self.image = pygame.transform.scale(img, (int(img.get_width() * scale), int(img.get_height() * scale)))
         self.rect = self.image.get_rect()
@@ -151,7 +158,7 @@ class Character(pygame.sprite.Sprite):
     def draw(self):
         screen.blit(pygame.transform.flip(self.image, self.flip, False), self.rect)
 
-player = Character('player', 200, 200, .5, 5)  
+player = Character('player', 200, 200, 2, 5)  
 target = Character('target', 800, 450, .15, 5)  
 
 game_active = False
