@@ -1,21 +1,24 @@
 import pygame
 import os
 
+# Load pygame
 pygame.init()
+
+# Load mixer mode for music
 pygame.mixer.init()
 
+# Set resolution
 SCREEN_WIDTH = 1600
 SCREEN_HEIGHT = 900
-
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+
+# Set Window Name
 pygame.display.set_caption('Mû.F.O')
 
 # Set framerate
 clock = pygame.time.Clock()
 FPS = 60
 
-# Global current frame because of some dumbass functionality bullshit that i don't know about
-current_frame = 0
 
 # Define player action variables
 moving_left = False
@@ -31,6 +34,20 @@ selected_sound = pygame.mixer.Sound("assets/sounds/effects/selected.mp3")
 game_active = False
 paused = False
 
+# Load background frames for title screen
+current_frame = 0
+background_frames = []
+frame_folder = "assets/frames"
+for filename in sorted(os.listdir(frame_folder)):
+    if filename.endswith(".png"):
+        frame = pygame.image.load(os.path.join(frame_folder, filename))
+        background_frames.append(frame)
+print(f"Loaded {len(background_frames)} frames.")
+
+# Load game font
+font_path = "assets/fonts/press-start-2p.ttf"
+
+# Create Button
 class Button():
     def __init__(self, text, x, y, width, height, color, selected_color, function):
         self.text = text
@@ -41,20 +58,20 @@ class Button():
         self.color = color
         self.selected_color = selected_color
         self.function = function
-        self.font = pygame.font.Font(None, 40)
+        self.font = pygame.font.Font(font_path, 20)
         self.selected = False
 
     def draw(self, screen):
         color = self.selected_color if self.selected else self.color
-        pygame.draw.rect(screen, color, (self.x, self.y, self.width, self.height))
-
-        text_surf = self.font.render(self.text, True, (0, 0, 0))
-        text_rect = text_surf.get_rect(center=((self.x + self.width // 2), (self.y + self.height // 2)))
+        text_surf = self.font.render(self.text, True, color)
+        text_rect = text_surf.get_rect(center=(self.x, self.y))
         screen.blit(text_surf, text_rect)
 
     def click(self):
+        selected_sound.play()
         self.function()
 
+# Create Character
 class Character(pygame.sprite.Sprite):
     def __init__(self, char_type, x, y, scale, speed):
         pygame.sprite.Sprite.__init__(self)
@@ -110,31 +127,36 @@ def start_game():
     # pygame.mixer.music.stop()
 
 def show_leaderboard():
-    # Show leaderboard page
-    pass
+    global game_active
+    game_active = True
 
-def quit_game():
-    pygame.quit()
-    exit()
+    while game_active:
+        draw_title_bg(background_frames)  # Use the same background animation as the title screen
 
-def resume_game():
-    global paused
-    paused = False
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                exit()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    game_active = False  # Go back to the title screen
+
+        pygame.display.update()
+        clock.tick(FPS)
 
 def pause_screen():
-    global paused
+    global paused, current_frame
 
     buttons = [
-        Button('Resume', SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 - 50, 200, 50, (0, 200, 0), (0, 255, 0), resume_game),
-        Button('Quit', SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 + 50, 200, 50, (200, 0, 0), (255, 0, 0), quit_game)
+        Button('Resume', SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 50, 200, 50, (100, 100, 100), (255, 255, 255), resume_game),
+        Button('Quit', SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 50, 200, 50, (100, 100, 100), (255, 255, 255), quit_game)
     ]
 
     selected_button = 0
     buttons[selected_button].selected = True
 
     while paused:
-        screen.fill((50, 50, 50, 128))
-        pygame.draw.rect(screen, (50, 50, 50, 128), (0, 0, SCREEN_WIDTH, SCREEN_HEIGHT))
+        draw_title_bg(background_frames)  # Use the same background animation as the title screen
 
         for button in buttons:
             button.draw(screen)
@@ -160,23 +182,23 @@ def pause_screen():
         pygame.display.update()
         clock.tick(FPS)
 
+def quit_game():
+    pygame.quit()
+    exit()
+
+def resume_game():
+    global paused
+    paused = False
+
 def title_screen():
-    # Load background frames for title screen
-    background_frames = []
-    frame_folder = "assets/frames"
-    for filename in sorted(os.listdir(frame_folder)):
-        if filename.endswith(".png"):
-            frame = pygame.image.load(os.path.join(frame_folder, filename))
-            background_frames.append(frame)
-    print(f"Loaded {len(background_frames)} frames.")
     
     pygame.mixer.music.load("assets/sounds/music/title_screen.mp3")
     pygame.mixer.music.play(-1)
 
     buttons = [
-        Button('Start', SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 - 100, 200, 50, (0, 200, 0), (0, 255, 0), start_game),
-        Button('Leaderboard', SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2, 200, 50, (0, 0, 200), (0, 0, 255), show_leaderboard),
-        Button('Quit', SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 + 100, 200, 50, (200, 0, 0), (255, 0, 0), quit_game)
+        Button('Start', SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 100, 200, 50, (100, 100, 100), (255, 255, 255), start_game),
+        Button('Leaderboard', SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, 200, 50, (100, 100, 100), (255, 255, 255), show_leaderboard),
+        Button('Quit', SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 100, 200, 50, (100, 100, 100), (255, 255, 255), quit_game)
     ]
 
     selected_button = 0
@@ -213,7 +235,7 @@ def title_screen():
 def run_game():
     global game_active, paused, moving_left, moving_right, moving_up, moving_down
     
-    # Load game background image
+    # Load game background image for active play
     game_bg = pygame.image.load("assets/img/map/map-0.png")
 
     while game_active:
