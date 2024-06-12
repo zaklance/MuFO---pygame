@@ -10,39 +10,26 @@ SCREEN_HEIGHT = 900
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption('Mû.F.O')
 
-#set framerate
+# Set framerate
 clock = pygame.time.Clock()
 FPS = 60
 
-#define player action variables
+# Global current frame because of some dumbass functionality bullshit that i don't know about
+current_frame = 0
+
+# Define player action variables
 moving_left = False
 moving_right = False
 moving_up = False
 moving_down = False
 
-#define colors
-BG = (144, 201, 120)
-
-# Load background frames
-background_frames = []
-frame_folder = "assets/frames"
-for filename in sorted(os.listdir(frame_folder)):
-    if filename.endswith(".png"):
-        frame = pygame.image.load(os.path.join(frame_folder, filename))
-        background_frames.append(frame)
-
-print(f"Loaded {len(background_frames)} frames.")
-
-current_frame = 0
-
-# Sound effects
-selector_sound = pygame.mixer.Sound("assets/sounds/effects/selector.mp3")
+# Load sound effects
+navigation_sound = pygame.mixer.Sound("assets/sounds/effects/navigation.mp3")
 selected_sound = pygame.mixer.Sound("assets/sounds/effects/selected.mp3")
 
-def draw_bg():
-    global current_frame
-    screen.blit(background_frames[current_frame], (0, 0))
-    current_frame = (current_frame + 1) % len(background_frames)
+# Global game state
+game_active = False
+paused = False
 
 class Button():
     def __init__(self, text, x, y, width, height, color, selected_color, function):
@@ -67,60 +54,6 @@ class Button():
 
     def click(self):
         self.function()
-
-def start_game():
-    global game_active
-    game_active = True
-    # pygame.mixer.music.stop()
-
-def show_leaderboard():
-    # show leaderboard page
-    pass
-
-def quit_game():
-    pygame.quit()
-    exit()
-
-def title_screen():
-    pygame.mixer.music.load("assets/sounds/music/title_screen.mp3")
-    pygame.mixer.music.play(-1)
-
-    buttons = [
-        Button('Start', SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 - 100, 200, 50, (0, 200, 0), (0, 255, 0), start_game),
-        Button('Leaderboard', SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2, 200, 50, (0, 0, 200), (0, 0, 255), show_leaderboard),
-        Button('Quit', SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 + 100, 200, 50, (200, 0, 0), (255, 0, 0), quit_game)
-    ]
-
-    selected_button = 0
-    buttons[selected_button].selected = True
-
-    while not game_active:
-        draw_bg()
-
-        for button in buttons:
-            button.draw(screen)
-
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                exit()
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_UP:
-                    buttons[selected_button].selected = False
-                    selected_button = (selected_button - 1) % len(buttons)
-                    buttons[selected_button].selected = True
-                    selector_sound.play()
-                if event.key == pygame.K_DOWN:
-                    buttons[selected_button].selected = False
-                    selected_button = (selected_button + 1) % len(buttons)
-                    buttons[selected_button].selected = True
-                    selector_sound.play()
-                if event.key == pygame.K_SPACE:
-                    buttons[selected_button].click()
-                    selected_sound.play()
-        
-        pygame.display.update()
-        clock.tick(FPS)
 
 class Character(pygame.sprite.Sprite):
     def __init__(self, char_type, x, y, scale, speed):
@@ -158,27 +91,134 @@ class Character(pygame.sprite.Sprite):
     def draw(self):
         screen.blit(pygame.transform.flip(self.image, self.flip, False), self.rect)
 
-player = Character('player', 200, 200, 2, 5)  
-target = Character('target', 800, 450, .15, 5)  
+player = Character('player', 200, 200, 2, 5)
+target = Character('target', 800, 450, .15, 5)
 
-game_active = False
+def draw_title_bg(background_frames):
+    global current_frame
+    screen.blit(background_frames[current_frame], (0, 0))
+    current_frame = (current_frame + 1) % len(background_frames)
 
-def main():
-    global game_active
+def draw_game_bg(game_bg):
+    scaled_bg = pygame.transform.scale(game_bg, (SCREEN_WIDTH, SCREEN_HEIGHT))
+    screen.blit(scaled_bg, (0, 0))
+
+def start_game():
+    global game_active, paused
+    game_active = True
+    paused = False
+    # pygame.mixer.music.stop()
+
+def show_leaderboard():
+    # Show leaderboard page
+    pass
+
+def quit_game():
+    pygame.quit()
+    exit()
+
+def resume_game():
+    global paused
+    paused = False
+
+def pause_screen():
+    global paused
+
+    buttons = [
+        Button('Resume', SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 - 50, 200, 50, (0, 200, 0), (0, 255, 0), resume_game),
+        Button('Quit', SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 + 50, 200, 50, (200, 0, 0), (255, 0, 0), quit_game)
+    ]
+
+    selected_button = 0
+    buttons[selected_button].selected = True
+
+    while paused:
+        screen.fill((50, 50, 50, 128))
+        pygame.draw.rect(screen, (50, 50, 50, 128), (0, 0, SCREEN_WIDTH, SCREEN_HEIGHT))
+
+        for button in buttons:
+            button.draw(screen)
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                exit()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_UP:
+                    buttons[selected_button].selected = False
+                    selected_button = (selected_button - 1) % len(buttons)
+                    buttons[selected_button].selected = True
+                    navigation_sound.play()
+                if event.key == pygame.K_DOWN:
+                    buttons[selected_button].selected = False
+                    selected_button = (selected_button + 1) % len(buttons)
+                    buttons[selected_button].selected = True
+                    navigation_sound.play()
+                if event.key == pygame.K_SPACE:
+                    buttons[selected_button].click()
+        
+        pygame.display.update()
+        clock.tick(FPS)
+
+def title_screen():
+    # Load background frames for title screen
+    background_frames = []
+    frame_folder = "assets/frames"
+    for filename in sorted(os.listdir(frame_folder)):
+        if filename.endswith(".png"):
+            frame = pygame.image.load(os.path.join(frame_folder, filename))
+            background_frames.append(frame)
+    print(f"Loaded {len(background_frames)} frames.")
     
-    while True:
-        if not game_active:
-            title_screen()
-        else:
-            run_game()
+    pygame.mixer.music.load("assets/sounds/music/title_screen.mp3")
+    pygame.mixer.music.play(-1)
+
+    buttons = [
+        Button('Start', SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 - 100, 200, 50, (0, 200, 0), (0, 255, 0), start_game),
+        Button('Leaderboard', SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2, 200, 50, (0, 0, 200), (0, 0, 255), show_leaderboard),
+        Button('Quit', SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 + 100, 200, 50, (200, 0, 0), (255, 0, 0), quit_game)
+    ]
+
+    selected_button = 0
+    buttons[selected_button].selected = True
+
+    while not game_active:
+        draw_title_bg(background_frames)
+
+        for button in buttons:
+            button.draw(screen)
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                exit()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_UP:
+                    buttons[selected_button].selected = False
+                    selected_button = (selected_button - 1) % len(buttons)
+                    buttons[selected_button].selected = True
+                    navigation_sound.play()
+                if event.key == pygame.K_DOWN:
+                    buttons[selected_button].selected = False
+                    selected_button = (selected_button + 1) % len(buttons)
+                    buttons[selected_button].selected = True
+                    navigation_sound.play()
+                if event.key == pygame.K_SPACE:
+                    buttons[selected_button].click()
+                    selected_sound.play()
+        
+        pygame.display.update()
+        clock.tick(FPS)
 
 def run_game():
-    global game_active, moving_left, moving_right, moving_up, moving_down
+    global game_active, paused, moving_left, moving_right, moving_up, moving_down
+    
+    # Load game background image
+    game_bg = pygame.image.load("assets/img/map/map-0.png")
 
-    run = True
-    while run:
+    while game_active:
         clock.tick(FPS)
-        draw_bg()
+        draw_game_bg(game_bg)
 
         player.draw()
         target.draw()
@@ -187,8 +227,7 @@ def run_game():
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                run = False
-                
+                game_active = False
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_a:
                     moving_left = True
@@ -199,8 +238,8 @@ def run_game():
                 if event.key == pygame.K_s:
                     moving_down = True
                 if event.key == pygame.K_ESCAPE:
-                    game_active = False
-                    run = False
+                    paused = True
+                    pause_screen()
                     
             if event.type == pygame.KEYUP:
                 if event.key == pygame.K_a:
@@ -216,5 +255,14 @@ def run_game():
 
     pygame.quit()
     exit()
+
+def main():
+    global game_active
+    
+    while True:
+        if not game_active:
+            title_screen()
+        else:
+            run_game()
 
 main()
