@@ -33,6 +33,7 @@ scroll_thresh = SCREEN_WIDTH // 2
 screen_scroll = [0, 0]
 bg_scroll = [0, 0]
 
+
 # Load sound effects
 navigation_sound = pygame.mixer.Sound("assets/sounds/effects/navigation.mp3")
 selected_sound = pygame.mixer.Sound("assets/sounds/effects/selected.mp3")
@@ -221,8 +222,24 @@ def title_screen():
     selected_button = 0
     buttons[selected_button].selected = True
 
+    earth_image = pygame.image.load("assets/img/general/earth.png")
+    earth_image = pygame.transform.scale(earth_image, (int(earth_image.get_width() * 6), int(earth_image.get_height() * 6)))
+    earth_rect = earth_image.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 1050))
+    
+    angle = 0
+
     while current_screen == "title":
         draw_title_bg(background_frames)
+        
+        # Increment the angle for rotation
+        angle += .3
+        if angle == 360:
+            angle = 0
+
+        # Rotate the earth image
+        rotated_earth_image = pygame.transform.rotate(earth_image, angle)
+        rotated_earth_rect = rotated_earth_image.get_rect(center=earth_rect.center)
+        screen.blit(rotated_earth_image, rotated_earth_rect)
 
         for button in buttons:
             button.draw(screen)
