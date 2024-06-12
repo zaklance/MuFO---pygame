@@ -26,6 +26,11 @@ moving_right = False
 moving_up = False
 moving_down = False
 
+scroll_thresh = SCREEN_WIDTH // 2
+screen_scroll = [0, 0]
+bg_scroll = [0, 0] 
+
+
 # Load sound effects
 navigation_sound = pygame.mixer.Sound("assets/sounds/effects/navigation.mp3")
 selected_sound = pygame.mixer.Sound("assets/sounds/effects/selected.mp3")
@@ -85,7 +90,8 @@ class Character(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.center = (x, y)
 
-    def move(self, moving_left, moving_right, moving_up, moving_down):
+    def move(self, moving_left, moving_right, moving_up, moving_down, threshold_x, threshold_y):
+        screen_scroll = [0, 0]
         dx = 0
         dy = 0
 
@@ -101,15 +107,37 @@ class Character(pygame.sprite.Sprite):
             dy = -self.speed
         if moving_down:
             dy = self.speed
-        
+
         self.rect.x += dx
         self.rect.y += dy
+
+        # Check horizontal threshold
+        if self.rect.right > SCREEN_WIDTH - threshold_x:
+            self.rect.right = SCREEN_WIDTH - threshold_x
+            screen_scroll[0] = dx
+        elif self.rect.left < threshold_x:
+            self.rect.left = threshold_x
+            screen_scroll[0] = dx
+
+        # Check vertical threshold
+        if self.rect.bottom > SCREEN_HEIGHT - threshold_y:
+            self.rect.bottom = SCREEN_HEIGHT - threshold_y
+            screen_scroll[1] = dy
+        elif self.rect.top < threshold_y:
+            self.rect.top = threshold_y
+            screen_scroll[1] = dy
+
+        return screen_scroll
 
     def draw(self):
         screen.blit(pygame.transform.flip(self.image, self.flip, False), self.rect)
 
-player = Character('player', 200, 200, 2, 5)
+player = Character('player', SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, 2, 5)
 target = Character('target', 800, 450, .15, 5)
+
+# Define the threshold area
+threshold_x = SCREEN_WIDTH // 3 
+threshold_y = SCREEN_HEIGHT // 4
 
 def draw_title_bg(background_frames):
     global current_frame
@@ -117,8 +145,8 @@ def draw_title_bg(background_frames):
     current_frame = (current_frame + 1) % len(background_frames)
 
 def draw_game_bg(game_bg):
-    scaled_bg = pygame.transform.scale(game_bg, (SCREEN_WIDTH, SCREEN_HEIGHT))
-    screen.blit(scaled_bg, (0, 0))
+    # scaled_bg = pygame.transform.scale(game_bg, (SCREEN_WIDTH, SCREEN_HEIGHT))
+    screen.blit(game_bg, (0, 0))
 
 def start_game():
     global game_active, paused
@@ -233,19 +261,28 @@ def title_screen():
         clock.tick(FPS)
 
 def run_game():
-    global game_active, paused, moving_left, moving_right, moving_up, moving_down
+    global game_active, paused, moving_left, moving_right, moving_up, moving_down, screen_scroll, bg_scroll
     
     # Load game background image for active play
     game_bg = pygame.image.load("assets/img/map/map-0.png")
+    bg_width = game_bg.get_width()
+    bg_height = game_bg.get_height()
 
     while game_active:
         clock.tick(FPS)
-        draw_game_bg(game_bg)
+
+        # Draw the game background
+        screen.blit(game_bg, (bg_scroll[0], bg_scroll[1]))
 
         player.draw()
-        target.draw()
 
-        player.move(moving_left, moving_right, moving_up, moving_down)
+        screen_scroll = player.move(moving_left, moving_right, moving_up, moving_down, threshold_x, threshold_y)
+        bg_scroll[0] -= screen_scroll[0]
+        bg_scroll[1] -= screen_scroll[1]
+
+        # Background scrolls within bounds
+        bg_scroll[0] = max(-(bg_width - SCREEN_WIDTH), min(0, bg_scroll[0]))
+        bg_scroll[1] = max(-(bg_height - SCREEN_HEIGHT), min(0, bg_scroll[1]))
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
