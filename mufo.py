@@ -19,6 +19,8 @@ pygame.display.set_caption('Mû.F.O')
 clock = pygame.time.Clock()
 FPS = 60
 
+# Global screen state
+current_screen = "title"
 
 # Define player action variables
 moving_left = False
@@ -28,8 +30,7 @@ moving_down = False
 
 scroll_thresh = SCREEN_WIDTH // 2
 screen_scroll = [0, 0]
-bg_scroll = [0, 0] 
-
+bg_scroll = [0, 0]
 
 # Load sound effects
 navigation_sound = pygame.mixer.Sound("assets/sounds/effects/navigation.mp3")
@@ -136,7 +137,7 @@ player = Character('player', SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, 2, 5)
 target = Character('target', 800, 450, .15, 5)
 
 # Define the threshold area
-threshold_x = SCREEN_WIDTH // 3 
+threshold_x = SCREEN_WIDTH // 3
 threshold_y = SCREEN_HEIGHT // 4
 
 def draw_title_bg(background_frames):
@@ -145,39 +146,26 @@ def draw_title_bg(background_frames):
     current_frame = (current_frame + 1) % len(background_frames)
 
 def draw_game_bg(game_bg):
-    # scaled_bg = pygame.transform.scale(game_bg, (SCREEN_WIDTH, SCREEN_HEIGHT))
-    screen.blit(game_bg, (0, 0))
+    screen.blit(game_bg, (bg_scroll[0], bg_scroll[1]))
 
 def start_game():
-    global game_active, paused
+    global game_active, paused, current_screen
     game_active = True
     paused = False
+    current_screen = "game"
     # pygame.mixer.music.stop()
 
 def show_leaderboard():
-    global game_active
-    game_active = True
-
-    while game_active:
-        draw_title_bg(background_frames)  # Use the same background animation as the title screen
-
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                exit()
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_ESCAPE:
-                    game_active = False  # Go back to the title screen
-
-        pygame.display.update()
-        clock.tick(FPS)
+    global current_screen
+    current_screen = "leaderboard"
 
 def pause_screen():
     global paused, current_frame
 
     buttons = [
-        Button('Resume', SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 50, 200, 50, (100, 100, 100), (255, 255, 255), resume_game),
-        Button('Quit', SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 50, 200, 50, (100, 100, 100), (255, 255, 255), quit_game)
+        Button('Resume', SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 100, 200, 50, (100, 100, 100), (255, 255, 255), resume_game),
+        Button('Leaderboard', SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, 200, 50, (100, 100, 100), (255, 255, 255), show_leaderboard),
+        Button('Quit', SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 100, 200, 50, (100, 100, 100), (255, 255, 255), quit_game)
     ]
 
     selected_button = 0
@@ -219,6 +207,7 @@ def resume_game():
     paused = False
 
 def title_screen():
+    global current_screen
     
     pygame.mixer.music.load("assets/sounds/music/title_screen.mp3")
     pygame.mixer.music.play(-1)
@@ -232,7 +221,7 @@ def title_screen():
     selected_button = 0
     buttons[selected_button].selected = True
 
-    while not game_active:
+    while current_screen == "title":
         draw_title_bg(background_frames)
 
         for button in buttons:
@@ -257,6 +246,24 @@ def title_screen():
                     buttons[selected_button].click()
                     selected_sound.play()
         
+        pygame.display.update()
+        clock.tick(FPS)
+
+def show_leaderboard():
+    global current_screen
+    current_screen = "leaderboard"
+    
+    while current_screen == "leaderboard":
+        draw_title_bg(background_frames)  # Use the same background animation as the title screen
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                exit()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    current_screen = "title"  # Go back to the title screen
+
         pygame.display.update()
         clock.tick(FPS)
 
@@ -319,9 +326,11 @@ def main():
     global game_active
     
     while True:
-        if not game_active:
+        if current_screen == "title":
             title_screen()
-        else:
+        elif current_screen == "game":
             run_game()
+        elif current_screen == "leaderboard":
+            show_leaderboard()
 
 main()
