@@ -33,6 +33,7 @@ moving_right = False
 moving_up = False
 moving_down = False
 
+# Define scrolling variables
 scroll_thresh = SCREEN_WIDTH // 2
 screen_scroll = [0, 0]
 bg_scroll = [0, 0]
@@ -166,7 +167,9 @@ def start_game():
     game_active = True
     paused = False
     current_screen = "game"
-    # pygame.mixer.music.stop()
+    
+    pygame.mixer.music.load("assets/sounds/music/in_game.mp3")
+    pygame.mixer.music.play(-1)
 
 def show_leaderboard():
     global game_active
@@ -301,7 +304,7 @@ def title_screen():
 
     earth_image = pygame.image.load("assets/img/general/earth.png")
     earth_image = pygame.transform.scale(earth_image, (int(earth_image.get_width() * 6), int(earth_image.get_height() * 6)))
-    earth_rect = earth_image.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 1050))
+    earth_rect = earth_image.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 1060))
     
     angle = 0
 
@@ -309,7 +312,7 @@ def title_screen():
         draw_title_bg(background_frames)
         
         # Increment the angle for rotation
-        angle += .3
+        angle += .05
         if angle == 360:
             angle = 0
 
