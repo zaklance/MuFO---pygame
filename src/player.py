@@ -150,7 +150,7 @@ class Player_beam_up(pygame.sprite.Sprite):
     def draw(self, screen):
         # Draw the target on the screen
         screen.blit(self.image, self.rect)
-
+        
 class Player_beam_down(pygame.sprite.Sprite):
 
     def __init__(self, char_type, x, y, scale, speed):
@@ -201,6 +201,50 @@ class Player_beam_down(pygame.sprite.Sprite):
         # Draw the target on the screen
         screen.blit(self.image, self.rect)
 
+class Player_beam(pygame.sprite.Sprite):
+    def __init__(self, char_type, x, y, scale, speed):
+        pygame.sprite.Sprite.__init__(self)
+        self.beaming_down = Player_beam_down(char_type, x, y, scale, speed)
+        self.beaming_up = Player_beam_up(char_type, x, y, scale, speed)
+        self.beaming = False
+        self.space_pressed = False  # Track if spacebar is pressed
+        self.start_time = 0  # Track time when spacebar was pressed
+
+    def handle_input(self, event):
+        if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+            if not self.beaming:
+                self.beaming = True
+                self.space_pressed = True
+                self.beaming_down.frame_index = 0
+                self.beaming_down.update_time = pygame.time.get_ticks()
+                self.start_time = pygame.time.get_ticks()  # Record start time
+
+        elif event.type == pygame.KEYUP and event.key == pygame.K_SPACE:
+            if self.space_pressed:
+                self.space_pressed = False
+                if self.beaming:  # Only trigger beam up if currently beaming down
+                    self.beaming_up.frame_index = 0
+                    self.beaming_up.update_time = pygame.time.get_ticks()
+
+    def update(self):
+        if self.beaming:
+            if not self.space_pressed:  # If spacebar is released
+                if not self.beaming_up.frame_index == 0:
+                    self.beaming_up.update()
+                    if self.beaming_up.frame_index == 0 and pygame.time.get_ticks() - self.beaming_up.update_time > 100:
+                        self.beaming = False  # Stop beaming up
+                else:
+                    self.beaming = False  # Stop beaming up
+            else:
+                self.beaming_down.update()  # Beam down animation
+
+    def draw(self, screen):
+        if self.beaming:
+            if not self.space_pressed:  # If spacebar is released
+                self.beaming_up.draw(screen)  # Draw beam up
+            else:
+                self.beaming_down.draw(screen)  # Draw beam down
+
 def main():
     pygame.init()
 
@@ -216,17 +260,24 @@ def main():
     player_scale = 2.5
     player_moving = Player_moving('player', 100, 300, player_scale, 5)
     player_idle1 = Player_idle('player', 600, 300, player_scale, 5)
-    player_idle2 = Player_idle('player', 300, 300, player_scale, 5)
+    player_idle2 = Player_idle('player', 100, 500, player_scale, 5)
+    player_idle3 = Player_idle('player', 400, 300, player_scale, 5)
+    player_beam = Player_beam('player', 400, 300, player_scale, 5)
     player_beam_up = Player_beam_up('player', 600, 300, player_scale, 5)
-    player_beam_down = Player_beam_down('player', 300, 300, player_scale, 5)
+    player_beam_down = Player_beam_down('player', 100, 500, player_scale, 5)
 
     running = True
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
+            player_beam.handle_input(event)
 
         screen.fill((0, 128, 0))  # Fill the screen with white
+
+        player_beam.update()
+        player_beam.draw(screen)
+
         player_beam_up.update()
         player_beam_up.draw(screen)
 
@@ -241,6 +292,9 @@ def main():
 
         player_idle2.update()
         player_idle2.draw(screen)
+
+        player_idle3.update()
+        player_idle3.draw(screen)
 
         pygame.display.flip()
         clock.tick(FPS)
