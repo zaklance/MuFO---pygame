@@ -167,7 +167,9 @@ def start_game():
     game_active = True
     paused = False
     current_screen = "game"
-    # pygame.mixer.music.stop()
+    
+    pygame.mixer.music.load("assets/sounds/music/in_game.mp3")
+    pygame.mixer.music.play(-1)
 
 def show_leaderboard():
     global game_active
