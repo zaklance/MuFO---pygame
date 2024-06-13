@@ -213,7 +213,7 @@ def show_leaderboard():
         header_x = SCREEN_WIDTH // 2 - (name_header.get_width() + score_header.get_width()) // 2
         screen.blit(name_header, (header_x, 150))
         screen.blit(score_header, (header_x + max_name_width + 150, 150))  # Adjusting spacing
-
+ 
         y_offset = 200
         rank_x = SCREEN_WIDTH // 2 - 300
 
