@@ -222,6 +222,9 @@ class Player_beam(pygame.sprite.Sprite):
         elif event.type == pygame.KEYUP and event.key == pygame.K_SPACE:
             if self.space_pressed:
                 self.space_pressed = False
+                if self.beaming:  # Only trigger beam up if currently beaming down
+                    self.beaming_up.frame_index = 0
+                    self.beaming_up.update_time = pygame.time.get_ticks()
 
     def update(self):
         if self.beaming:
