@@ -89,7 +89,7 @@ class Game:
             ('BobtheBuilder', 111),
             ('Drizzo', 104),
             ('2LGIT2QUIT', 97),
-            ('Evenflow', 95),
+            ('Mr_WoseWick', 95),
             ('FrankTheTank', 90),
             ('LukeSkyTalker', 70),
             ('HenryThe8th', 68),
@@ -97,17 +97,17 @@ class Game:
             ('JackTheR!pper', 52)
         ]
 
+        game = Game(title='Mû.F.O')  # Replace with your actual game title
+        game.save()
+        print(f"Inserted game: {game.title}, ID: {game.id}")  # Debug statement
+
         for username, score in placeholder_players:
             player = Player(username=username)
             player.save()
             print(f"Inserted player: {player.username}, ID: {player.id}")  # Debug statement
 
-            game = Game(title='Mû.F.O')  # Replace with your actual game title
-            game.save()
-            print(f"Inserted game: {game.title}, ID: {game.id}")  # Debug statement
-
-            player_id = player.id
-            game_id = game.id   
+            # player_id = player.id
+            # game_id = game.id   
 
             # Create score and result entries
             score_entry = Score(player=player, game=game)
