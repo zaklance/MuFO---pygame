@@ -1,12 +1,16 @@
 import pygame
 import os
 from map import load_game_bg, draw_game_bg, update_bg_scroll
+from leaderboard import Result, Player, Game, Score
 
 # Load pygame
 pygame.init()
 
 # Load mixer mode for music
 pygame.mixer.init()
+
+# Load database initializer
+Game.initialize_database()
 
 # Set resolution
 SCREEN_WIDTH = 1600
@@ -34,14 +38,22 @@ scroll_thresh = SCREEN_WIDTH // 2
 screen_scroll = [0, 0]
 bg_scroll = [0, 0]
 
-
 # Load sound effects
-navigation_sound = pygame.mixer.Sound("assets/sounds/effects/navigation.mp3")
-selected_sound = pygame.mixer.Sound("assets/sounds/effects/selected.mp3")
+script_dir = os.path.dirname(os.path.abspath(__file__))
+assets_dir = os.path.join(script_dir, "assets", "sounds", "effects")
+
+navigation_sound_path = os.path.join(assets_dir, "navigation.mp3")
+selected_sound_path = os.path.join(assets_dir, "selected.mp3")
+
+navigation_sound = pygame.mixer.Sound(navigation_sound_path)
+selected_sound = pygame.mixer.Sound(selected_sound_path)
 
 # Global game state
 game_active = False
 paused = False
+
+# Define global variable for Score
+current_score = Score(None, None)
 
 # Load background frames for title screen
 current_frame = 0
@@ -55,6 +67,8 @@ print(f"Loaded {len(background_frames)} frames.")
 
 # Load game font
 font_path = "assets/fonts/press-start-2p.ttf"
+font_size = 24
+custom_font = pygame.font.Font(font_path, font_size)
 
 # Create Button
 class Button():
@@ -156,8 +170,71 @@ def start_game():
     # pygame.mixer.music.stop()
 
 def show_leaderboard():
-    global current_screen
-    current_screen = "leaderboard"
+    global game_active
+    game_active = True
+    leaderboard_data = Result.get_leaderboard()
+    print(f"Leaderboard data to display: {leaderboard_data}")
+
+    colors = [
+        (192, 192, 192), (192, 192, 192),  # Silver
+        (255, 165, 0), (255, 165, 0),      # Orange
+        (0, 0, 255), (0, 0, 255),          # Blue
+        (0, 128, 0), (0, 128, 0),          # Green
+        (255, 0, 0), (255, 0, 0)           # Red
+    ]
+
+    trophy_image = pygame.image.load('assets/img/leaderboard/trophy.png')
+    trophy_image = pygame.transform.scale(trophy_image, (30, 30))
+
+    while game_active:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                exit()
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    game_active = False  # Exit leaderboard screen on ESC key
+
+        draw_title_bg(background_frames)  # Use the same background animation as the title screen
+        
+        title = custom_font.render("LEADERBOARD", True, (255, 255, 0))
+        screen.blit(title, (SCREEN_WIDTH // 2 - title.get_width() // 2, 50))
+
+        trophy_width, trophy_height = trophy_image.get_size()
+        screen.blit(trophy_image, (SCREEN_WIDTH // 2 - title.get_width() // 2 - trophy_width - 10, 50))  # Left side
+        screen.blit(trophy_image, (SCREEN_WIDTH // 2 + title.get_width() // 2 + 10, 50))  # Right side
+
+        #Determine maximum width needed for the name column
+        max_name_width = max(custom_font.size(username)[0] for username, game_title, score in leaderboard_data[:10])
+        score_width = max(custom_font.size(f'{score}')[0] for _, _, score in leaderboard_data[:10])
+
+        # Display column headers with increased spacing
+        name_header = custom_font.render("Name", True, (255, 255, 255))
+        score_header = custom_font.render("Score", True, (255, 255, 255))
+        header_x = SCREEN_WIDTH // 2 - (name_header.get_width() + score_header.get_width()) // 2
+        screen.blit(name_header, (header_x, 150))
+        screen.blit(score_header, (header_x + max_name_width + 150, 150))  # Adjusting spacing
+ 
+        y_offset = 200
+        rank_x = SCREEN_WIDTH // 2 - 300
+
+        # Display placeholders for ranks in the first column
+        for i in range(10):
+            rank_text = custom_font.render(f"{i + 1}", True, colors[i])
+            screen.blit(rank_text, (rank_x, y_offset + i * 40))
+
+        # Display actual leaderboard data with increased spacing
+        for i, (username, game_title, score) in enumerate(leaderboard_data[:10]):
+            username_text = custom_font.render(f"{username}", True, colors[i])
+            username_x = header_x + (max_name_width - username_text.get_width()) // 2
+            screen.blit(username_text, (header_x, y_offset + i * 40))
+
+            score_text = custom_font.render(f"{score}", True, colors[i])
+            screen.blit(score_text, (header_x + max_name_width + 150, y_offset + i * 40))  # Adjusting spacing
+
+        pygame.display.update()
+        clock.tick(FPS)
+
 
 def pause_screen():
     global paused, current_frame
@@ -267,26 +344,8 @@ def title_screen():
         pygame.display.update()
         clock.tick(FPS)
 
-def show_leaderboard():
-    global current_screen
-    current_screen = "leaderboard"
-    
-    while current_screen == "leaderboard":
-        draw_title_bg(background_frames)  # Use the same background animation as the title screen
-
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                exit()
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_ESCAPE:
-                    current_screen = "title"  # Go back to the title screen
-
-        pygame.display.update()
-        clock.tick(FPS)
-
 def run_game():
-    global game_active, paused, moving_left, moving_right, moving_up, moving_down, screen_scroll, bg_scroll
+    global game_active, paused, moving_left, moving_right, moving_up, moving_down, screen_scroll, bg_scroll, current_score
     
     # Load game background image for active play
     game_bg = load_game_bg("assets/img/map/map-0.png")
@@ -304,9 +363,14 @@ def run_game():
         screen_scroll = player.move(moving_left, moving_right, moving_up, moving_down, threshold_x, threshold_y)
         bg_scroll = update_bg_scroll(bg_scroll, screen_scroll, bg_width, bg_height, SCREEN_WIDTH, SCREEN_HEIGHT)
 
+        # DEAR SANDRO, MAKE SURE THIS IS UNCOMMENTED WHEN SCORES ARE INCREMENTING
+        # if player.rect.colliderect(target.rect):
+        #     current_score.update_score(target_points=10)
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 game_active = False
+                current_score.save_score()
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_a:
                     moving_left = True
@@ -332,6 +396,7 @@ def run_game():
 
         pygame.display.update()
 
+    current_score.save_score()
     pygame.quit()
     exit()
 
