@@ -182,6 +182,9 @@ def show_leaderboard():
         (255, 0, 0), (255, 0, 0)           # Red
     ]
 
+    trophy_image = pygame.image.load('assets/img/leaderboard/trophy.png')
+    trophy_image = pygame.transform.scale(trophy_image, (30, 30))
+
     while game_active:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -192,18 +195,27 @@ def show_leaderboard():
                     game_active = False  # Exit leaderboard screen on ESC key
 
         draw_title_bg(background_frames)  # Use the same background animation as the title screen
-        title = custom_font.render("Leaderboard", True, (255, 255, 255))
+        
+        title = custom_font.render("LEADERBOARD", True, (255, 255, 0))
         screen.blit(title, (SCREEN_WIDTH // 2 - title.get_width() // 2, 50))
+
+        trophy_width, trophy_height = trophy_image.get_size()
+        screen.blit(trophy_image, (SCREEN_WIDTH // 2 - title.get_width() // 2 - trophy_width - 10, 50))  # Left side
+        screen.blit(trophy_image, (SCREEN_WIDTH // 2 + title.get_width() // 2 + 10, 50))  # Right side
+
+        #Determine maximum width needed for the name column
+        max_name_width = max(custom_font.size(username)[0] for username, game_title, score in leaderboard_data[:10])
+        score_width = max(custom_font.size(f'{score}')[0] for _, _, score in leaderboard_data[:10])
 
         # Display column headers with increased spacing
         name_header = custom_font.render("Name", True, (255, 255, 255))
         score_header = custom_font.render("Score", True, (255, 255, 255))
         header_x = SCREEN_WIDTH // 2 - (name_header.get_width() + score_header.get_width()) // 2
         screen.blit(name_header, (header_x, 150))
-        screen.blit(score_header, (header_x + name_header.get_width() + 100, 150))  # Adjusting spacing
+        screen.blit(score_header, (header_x + max_name_width + 150, 150))  # Adjusting spacing
 
         y_offset = 200
-        rank_x = SCREEN_WIDTH // 2 - 200
+        rank_x = SCREEN_WIDTH // 2 - 300
 
         # Display placeholders for ranks in the first column
         for i in range(10):
@@ -213,13 +225,15 @@ def show_leaderboard():
         # Display actual leaderboard data with increased spacing
         for i, (username, game_title, score) in enumerate(leaderboard_data[:10]):
             username_text = custom_font.render(f"{username}", True, colors[i])
+            username_x = header_x + (max_name_width - username_text.get_width()) // 2
             screen.blit(username_text, (header_x, y_offset + i * 40))
 
             score_text = custom_font.render(f"{score}", True, colors[i])
-            screen.blit(score_text, (header_x + name_header.get_width() + 100, y_offset + i * 40))  # Adjusting spacing
+            screen.blit(score_text, (header_x + max_name_width + 150, y_offset + i * 40))  # Adjusting spacing
 
         pygame.display.update()
         clock.tick(FPS)
+
 
 def pause_screen():
     global paused, current_frame
@@ -329,59 +343,6 @@ def title_screen():
         pygame.display.update()
         clock.tick(FPS)
 
-def show_leaderboard():
-    global game_active
-    game_active = True
-    leaderboard_data = Result.get_leaderboard()
-    print(f"Leaderboard data to display: {leaderboard_data}")
-
-    colors = [
-        (192, 192, 192), (192, 192, 192),  # Silver
-        (255, 165, 0), (255, 165, 0),      # Orange
-        (0, 0, 255), (0, 0, 255),          # Blue
-        (0, 128, 0), (0, 128, 0),          # Green
-        (255, 0, 0), (255, 0, 0)           # Red
-    ]
-
-    while game_active:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                exit()
-            elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_ESCAPE:
-                    game_active = False  # Exit leaderboard screen on ESC key
-
-        draw_title_bg(background_frames)  # Use the same background animation as the title screen
-        title = custom_font.render("Leaderboard", True, (255, 255, 255))
-        screen.blit(title, (SCREEN_WIDTH // 2 - title.get_width() // 2, 50))
-
-        # Display column headers with increased spacing
-        name_header = custom_font.render("Name", True, (255, 255, 255))
-        score_header = custom_font.render("Score", True, (255, 255, 255))
-        header_x = SCREEN_WIDTH // 2 - (name_header.get_width() + score_header.get_width()) // 2
-        screen.blit(name_header, (header_x, 150))
-        screen.blit(score_header, (header_x + name_header.get_width() + 100, 150))  # Adjusting spacing
-
-        y_offset = 200
-        rank_x = SCREEN_WIDTH // 2 - 200
-
-        # Display placeholders for ranks in the first column
-        for i in range(10):
-            rank_text = custom_font.render(f"{i + 1}", True, colors[i])
-            screen.blit(rank_text, (rank_x, y_offset + i * 40))
-
-        # Display actual leaderboard data with increased spacing
-        for i, (username, game_title, score) in enumerate(leaderboard_data[:10]):
-            username_text = custom_font.render(f"{username}", True, colors[i])
-            screen.blit(username_text, (header_x, y_offset + i * 40))
-
-            score_text = custom_font.render(f"{score}", True, colors[i])
-            screen.blit(score_text, (header_x + name_header.get_width() + 100, y_offset + i * 40))  # Adjusting spacing
-
-        pygame.display.update()
-        clock.tick(FPS)
-
 def run_game():
     global game_active, paused, moving_left, moving_right, moving_up, moving_down, screen_scroll, bg_scroll, current_score
     
@@ -401,8 +362,9 @@ def run_game():
         screen_scroll = player.move(moving_left, moving_right, moving_up, moving_down, threshold_x, threshold_y)
         bg_scroll = update_bg_scroll(bg_scroll, screen_scroll, bg_width, bg_height, SCREEN_WIDTH, SCREEN_HEIGHT)
 
-        if player.rect.colliderect(target.rect):
-            current_score.update_score(target_points=10)
+        # DEAR SANDRO, MAKE SURE THIS IS UNCOMMENTED WHEN SCORES ARE INCREMENTING
+        # if player.rect.colliderect(target.rect):
+        #     current_score.update_score(target_points=10)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
