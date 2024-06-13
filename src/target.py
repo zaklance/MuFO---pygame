@@ -1,6 +1,11 @@
 import pygame
 import os
 
+# Target Classes: 
+# Cows: Cow_1, Cow_2, Cow_3
+# Chickens: Chicken_1, Chicken_2
+# People Man_1, Man_2, Woman_1, Woman_2
+
 class Cow_1(pygame.sprite.Sprite):
 
     def __init__(self, char_type, x, y, scale, speed):
