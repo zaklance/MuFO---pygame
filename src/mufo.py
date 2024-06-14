@@ -3,6 +3,7 @@ import os
 from map import load_game_bg, draw_game_bg, update_bg_scroll
 from leaderboard import Result, Player, Game, Score
 
+
 # Load pygame
 pygame.init()
 
@@ -102,11 +103,64 @@ class Character(pygame.sprite.Sprite):
         self.speed = speed
         self.direction = 1
         self.flip = False
-        img_path = f'assets/img/{self.char_type}/idle/0.png'
-        img = pygame.image.load(img_path)
-        self.image = pygame.transform.scale(img, (int(img.get_width() * scale), int(img.get_height() * scale)))
+        self.animation_list = []
+        self.frame_index = 0
+        self.action = 0
+        self.update_time = pygame.time.get_ticks()
+
+        # Load idle animation images
+        self.load_images('idle', scale)
+
+        # Loead beam down animation images
+        self.load_images('beam_down', scale)
+
+        self.image = self.animation_list[self.action][self.frame_index]
         self.rect = self.image.get_rect()
         self.rect.center = (x, y)
+
+    def load_images(self, action, scale):
+        temp_list = []
+        folder_path = f'assets/img/{self.char_type}/{action}/'
+        if not os.path.exists(folder_path):
+            print(f"Error: Folder '{folder_path}' not found.")
+            return
+
+        num_of_frames = len(os.listdir(folder_path))
+        for i in range(num_of_frames):
+            img_path = os.path.join(folder_path, f'{i}.png')
+            if not os.path.exists(img_path):
+                print(f"Warning: File '{img_path}' not found.")
+                continue
+
+            img = pygame.image.load(img_path)
+            img = pygame.transform.scale(img, (int(img.get_width() * scale), int(img.get_height() * scale)))
+            temp_list.append(img)
+
+        self.animation_list.append(temp_list)
+    
+    def update(self):
+        # Update animation frames
+        self.image = self.animation_list[self.action][self.frame_index]
+        if pygame.time.get_ticks() - self.update_time > 100:
+            self.update_time = pygame.time.get_ticks()
+            self.frame_index += self.direction
+            if self.frame_index >= len(self.animation_list[self.action]):
+                self.frame_index = 0
+            elif self.frame_index < 0:
+                self.frame_index = len(self.animation_list[self.action]) - 1
+
+    def handle_event(self, event):
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_SPACE:
+                if self.action != 1:  # Only activate beam down animation if not already active
+                    self.action = 1  # Set action to beam down
+                    self.frame_index = 0
+        elif event.type == pygame.KEYUP:
+            if event.key == pygame.K_SPACE:
+                if self.action == 1:  # Deactivate beam down animation on key release
+                    self.action = 0  # Set action back to idle
+                    self.frame_index = 0
+                    self.direction = 1  # Reset direction
 
     def move(self, moving_left, moving_right, moving_up, moving_down, threshold_x, threshold_y):
         screen_scroll = [0, 0]
@@ -147,11 +201,15 @@ class Character(pygame.sprite.Sprite):
 
         return screen_scroll
 
-    def draw(self):
-        screen.blit(pygame.transform.flip(self.image, self.flip, False), self.rect)
+    def draw(self, screen):
+        if self.action == 0:
+            # Draw idle animation
+            screen.blit(pygame.transform.flip(self.animation_list[self.action][self.frame_index], self.flip, False), self.rect)
+        elif self.action == 1:
+            # Draw beam down animation
+            screen.blit(pygame.transform.flip(self.animation_list[self.action][self.frame_index], self.flip, False), self.rect)
 
 player = Character('player', SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, 2, 5)
-target = Character('target', 800, 450, .15, 5)
 
 # Define the threshold area
 threshold_x = SCREEN_WIDTH // 3
@@ -283,8 +341,9 @@ def quit_game():
     exit()
 
 def resume_game():
-    global paused
+    global paused, game_active
     paused = False
+    game_active = True
 
 def title_screen():
     global current_screen
@@ -350,9 +409,16 @@ def run_game():
     global game_active, paused, moving_left, moving_right, moving_up, moving_down, screen_scroll, bg_scroll, current_score
     
     # Load game background image for active play
+    pygame.init()
+    screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+    pygame.display.set_caption("MuFO")
+    clock = pygame.time.Clock()
+
     game_bg = load_game_bg("assets/img/map/map-0.png")
     bg_width = game_bg.get_width()
     bg_height = game_bg.get_height()
+
+    player = Character('player', SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, 2, 5)
 
     while game_active:
         clock.tick(FPS)
@@ -360,7 +426,8 @@ def run_game():
         # Draw the game background
         draw_game_bg(screen, game_bg, bg_scroll)
 
-        player.draw()
+        player.update()
+        player.draw(screen)
 
         screen_scroll = player.move(moving_left, moving_right, moving_up, moving_down, threshold_x, threshold_y)
         bg_scroll = update_bg_scroll(bg_scroll, screen_scroll, bg_width, bg_height, SCREEN_WIDTH, SCREEN_HEIGHT)
@@ -385,6 +452,7 @@ def run_game():
                 if event.key == pygame.K_ESCAPE:
                     paused = True
                     pause_screen()
+                player.handle_event(event)
                     
             if event.type == pygame.KEYUP:
                 if event.key == pygame.K_a:

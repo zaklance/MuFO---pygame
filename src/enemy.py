@@ -1,9 +1,9 @@
 import pygame
 import os
 
-class Cop_1(pygame.sprite.Sprite):
+class Enemies(pygame.sprite.Sprite):
 
-    def __init__(self, char_type, x, y, scale, speed):
+    def __init__(self, x, y, scale, speed=0):
         pygame.sprite.Sprite.__init__(self)
         self.speed = speed
         self.direction = 1
@@ -15,7 +15,7 @@ class Cop_1(pygame.sprite.Sprite):
 
         class_name = self.__class__.__name__.lower()        
 
-        # Load images for target
+       # Load images for target
         temp_list = []
         # Count number of files in the folder
         folder_path = f'assets/img/enemy/moving/people/{class_name}/'
@@ -42,16 +42,32 @@ class Cop_1(pygame.sprite.Sprite):
         
     def update(self):
         # Update animation frames
-        self.image = self.animation_list[self.action][self.frame_index]
         if pygame.time.get_ticks() - self.update_time > 100:
             self.update_time = pygame.time.get_ticks()
             self.frame_index += 1
             if self.frame_index >= len(self.animation_list[self.action]):
                 self.frame_index = 0
+        self.image = self.animation_list[self.action][self.frame_index]
 
     def draw(self, screen):
         # Draw the target on the screen
         screen.blit(self.image, self.rect)
+
+class Cop_1(Enemies):
+    def __init__(self, x, y, scale, speed=0):
+        super().__init__(x, y, scale, speed)
+
+class Cop_1_Bang(Enemies):
+    def __init__(self, x, y, scale, speed=0):
+        super().__init__(x, y, scale, speed)
+
+class Cop_2(Enemies):
+    def __init__(self, x, y, scale, speed=0):
+        super().__init__(x, y, scale, speed)
+
+class Cop_2_Bang(Enemies):
+    def __init__(self, x, y, scale, speed=0):
+        super().__init__(x, y, scale, speed)
 
 def main():
     pygame.init()
@@ -66,8 +82,10 @@ def main():
     FPS = 8
 
     cop_scale = 2.5
-    cop_1 = Cop_1('cop_1', 700, 100, cop_scale, 5)
-    # cop_2 = Man_2('cop_2', 300, 700, cop_scale, 5)
+    cop_1 = Cop_1(100, 100, cop_scale, 5)
+    cop_2 = Cop_2(300, 300, cop_scale, 5)
+    cop_1_bang = Cop_1_Bang(100, 300, cop_scale, 5)
+    cop_2_bang = Cop_2_Bang(300, 500, cop_scale, 5)
 
     running = True
     while running:
@@ -78,6 +96,15 @@ def main():
         screen.fill((0, 128, 0))
         cop_1.update()
         cop_1.draw(screen) 
+
+        cop_2.update()
+        cop_2.draw(screen) 
+
+        cop_1_bang.update()
+        cop_1_bang.draw(screen) 
+
+        cop_2_bang.update()
+        cop_2_bang.draw(screen) 
 
         pygame.display.flip()
         clock.tick(FPS)
