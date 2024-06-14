@@ -283,8 +283,9 @@ def quit_game():
     exit()
 
 def resume_game():
-    global paused
+    global paused, game_active
     paused = False
+    game_active = True
 
 def title_screen():
     global current_screen
