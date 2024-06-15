@@ -438,27 +438,27 @@ def run_game():
     bg_width = game_bg.get_width()
     bg_height = game_bg.get_height()
 
-    player_beam_down = Player_beam_down(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, 2, 5)
     player = Player_idle(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, 2, 5)
+    player_beam_down = Player_beam_down(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, 2, 5)
 
     while game_active:
         clock.tick(FPS)
 
         # Draw the game background
         draw_game_bg(screen, game_bg, bg_scroll)
-
-        # Always draw beam first so it appears behind the player
+        
         player_beam_down.update(player.rect)
         player_beam_down.draw()
+        
+        # Update mouse control with player object
+        mouse_control.update(screen, player)
 
         player.update()
         player.draw()
+        
 
         screen_scroll = player.move(moving_left, moving_right, moving_up, moving_down, threshold_x, threshold_y)
         bg_scroll = update_bg_scroll(bg_scroll, screen_scroll, bg_width, bg_height, SCREEN_WIDTH, SCREEN_HEIGHT)
-
-        # Update mouse control
-        mouse_control.update(screen)
 
         # Process events
         for event in pygame.event.get():
