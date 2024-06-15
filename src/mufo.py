@@ -1,3 +1,4 @@
+from mouse import MouseControl
 import pygame
 import os
 from map import load_game_bg, draw_game_bg, update_bg_scroll
@@ -52,6 +53,9 @@ selected_sound = pygame.mixer.Sound(selected_sound_path)
 game_active = False
 paused = False
 
+# Initialize MouseControl
+mouse_control = MouseControl()
+
 # Define global variable for Score
 current_score = Score(None, None)
 
@@ -94,20 +98,41 @@ class Button():
         selected_sound.play()
         self.function()
 
-# Create Character
 class Character(pygame.sprite.Sprite):
-    def __init__(self, char_type, x, y, scale, speed):
-        pygame.sprite.Sprite.__init__(self)
-        self.char_type = char_type
-        self.speed = speed
-        self.direction = 1
+    def __init__(self, x, y, scale, speed):
+        super().__init__()
+        self.animation_list = []
         self.flip = False
-        img_path = f'assets/img/{self.char_type}/idle/0.png'
-        img = pygame.image.load(img_path)
-        self.image = pygame.transform.scale(img, (int(img.get_width() * scale), int(img.get_height() * scale)))
+        self.frame_index = 0
+        self.update_time = pygame.time.get_ticks()
+        self.speed = speed
+        self.load_images('idle', scale)
+        self.image = self.animation_list[self.frame_index]
         self.rect = self.image.get_rect()
         self.rect.center = (x, y)
 
+    def load_images(self, action, scale):
+        self.animation_list = []
+        folder_path = f'assets/img/player/{action}/'
+        num_of_frames = len(os.listdir(folder_path))
+        for i in range(num_of_frames):
+            img_path = os.path.join(folder_path, f'{i}.png')
+            img = pygame.image.load(img_path)
+            img = pygame.transform.scale(img, (int(img.get_width() * scale), int(img.get_height() * scale)))
+            self.animation_list.append(img)
+
+class Player_idle(Character):
+    def __init__(self, x, y, scale, speed):
+        super().__init__(x, y, scale, speed)
+        self.load_images('idle', scale)
+        self.image = self.animation_list[0]
+
+    def update(self):
+        self.image = self.animation_list[self.frame_index]
+        if pygame.time.get_ticks() - self.update_time > 100:
+            self.update_time = pygame.time.get_ticks()
+            self.frame_index = (self.frame_index + 1) % len(self.animation_list)
+    
     def move(self, moving_left, moving_right, moving_up, moving_down, threshold_x, threshold_y):
         screen_scroll = [0, 0]
         dx = 0
@@ -150,8 +175,39 @@ class Character(pygame.sprite.Sprite):
     def draw(self):
         screen.blit(pygame.transform.flip(self.image, self.flip, False), self.rect)
 
-player = Character('player', SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, 2, 5)
-target = Character('target', 800, 450, .15, 5)
+class Player_beam_down(Character):
+    def __init__(self, x, y, scale, speed):
+        super().__init__(x, y, scale, speed)
+        self.load_images('beam_down', scale)
+        self.is_beam_active = False
+        self.reverse = False
+        self.spacebar_held = False
+
+    def start_beam(self):
+        self.is_beam_active = True
+        self.reverse = False
+
+    def end_beam(self):
+        self.reverse = True
+
+    def update(self, player_rect):
+        if self.is_beam_active:
+            self.rect.center = player_rect.center
+            self.image = self.animation_list[self.frame_index]
+            if pygame.time.get_ticks() - self.update_time > 100:
+                self.update_time = pygame.time.get_ticks()
+                if not self.reverse:
+                    if self.frame_index < len(self.animation_list) - 1:
+                        self.frame_index += 1
+                else:
+                    if self.frame_index > 0:
+                        self.frame_index -= 1
+                    else:
+                        self.is_beam_active = False
+
+    def draw(self):
+        if self.is_beam_active:
+            screen.blit(pygame.transform.flip(self.image, self.flip, False), self.rect)
 
 # Define the threshold area
 threshold_x = SCREEN_WIDTH // 3
@@ -206,7 +262,7 @@ def show_leaderboard():
         screen.blit(trophy_image, (SCREEN_WIDTH // 2 - title.get_width() // 2 - trophy_width - 10, 50))  # Left side
         screen.blit(trophy_image, (SCREEN_WIDTH // 2 + title.get_width() // 2 + 10, 50))  # Right side
 
-        #Determine maximum width needed for the name column
+        # Determine maximum width needed for the name column
         max_name_width = max(custom_font.size(username)[0] for username, game_title, score in leaderboard_data[:10])
         score_width = max(custom_font.size(f'{score}')[0] for _, _, score in leaderboard_data[:10])
 
@@ -216,7 +272,7 @@ def show_leaderboard():
         header_x = SCREEN_WIDTH // 2 - (name_header.get_width() + score_header.get_width()) // 2
         screen.blit(name_header, (header_x, 150))
         screen.blit(score_header, (header_x + max_name_width + 150, 150))  # Adjusting spacing
- 
+
         y_offset = 200
         rank_x = SCREEN_WIDTH // 2 - 300
 
@@ -236,7 +292,6 @@ def show_leaderboard():
 
         pygame.display.update()
         clock.tick(FPS)
-
 
 def pause_screen():
     global paused, current_frame
@@ -355,21 +410,28 @@ def run_game():
     bg_width = game_bg.get_width()
     bg_height = game_bg.get_height()
 
+    player = Player_idle(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, 2, 5)
+    player_beam_down = Player_beam_down(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, 2, 5)
+
     while game_active:
         clock.tick(FPS)
 
         # Draw the game background
         draw_game_bg(screen, game_bg, bg_scroll)
 
+        player_beam_down.update(player.rect)
+        player_beam_down.draw()
+        
+        player.update()
         player.draw()
 
         screen_scroll = player.move(moving_left, moving_right, moving_up, moving_down, threshold_x, threshold_y)
         bg_scroll = update_bg_scroll(bg_scroll, screen_scroll, bg_width, bg_height, SCREEN_WIDTH, SCREEN_HEIGHT)
 
-        # DEAR SANDRO, MAKE SURE THIS IS UNCOMMENTED WHEN SCORES ARE INCREMENTING
-        # if player.rect.colliderect(target.rect):
-        #     current_score.update_score(target_points=10)
+        # Update mouse control
+        mouse_control.update(screen)
 
+        # Process events
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 game_active = False
@@ -380,13 +442,16 @@ def run_game():
                 if event.key == pygame.K_d:
                     moving_right = True
                 if event.key == pygame.K_w:
-                    moving_up = True
+                    moving_up = True 
                 if event.key == pygame.K_s:
                     moving_down = True
                 if event.key == pygame.K_ESCAPE:
                     paused = True
-                    pause_screen()
-                    
+                    pause_screen()  
+                if event.key == pygame.K_SPACE:
+                    player_beam_down.spacebar_held = True
+                    if not player_beam_down.is_beam_active:
+                        player_beam_down.start_beam()
             if event.type == pygame.KEYUP:
                 if event.key == pygame.K_a:
                     moving_left = False
@@ -396,6 +461,12 @@ def run_game():
                     moving_up = False
                 if event.key == pygame.K_s:
                     moving_down = False
+                if event.key == pygame.K_SPACE:
+                    player_beam_down.spacebar_held = False
+                    player_beam_down.end_beam()
+
+            # Process mouse events
+            mouse_control.process_events(event)
 
         pygame.display.update()
 
