@@ -6,14 +6,15 @@ def load_game_bg(image_path):
 def draw_game_bg(screen, game_bg, bg_scroll):
     screen.blit(game_bg, (bg_scroll[0], bg_scroll[1]))
 
-class Building(pygame.sprite.Sprite):
-    def __init__(self, building, x, y, scale):
-        self.image = f'assets/img/buildings/{building}.png'
+class Building(pygame.sprite.Group):
+    def __init__(self, building, x, y):
+        self.image = pygame.image.load(f'assets/img/buildings/{building}.png')
         self.rect = self.image.get_rect()
-        self.rect.center = (x, y)
+        self.rect.topleft = (x, y)
 
-    def draw(self, screen):
-        screen.blit(self.imgae), self.rect)
+    def draw(self, background):
+        background.blit(self.image, self.rect)     
+ 
 
 
 

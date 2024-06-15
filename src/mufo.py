@@ -1,7 +1,7 @@
 from mouse import MouseControl
 import pygame
 import os
-from map import load_game_bg, draw_game_bg, update_bg_scroll
+from map import load_game_bg, draw_game_bg, update_bg_scroll, Building
 from leaderboard import Result, Game, Score
 from target import Targets
 from enemy import Enemies
@@ -434,20 +434,25 @@ def run_game():
     game_bg = load_game_bg("assets/img/map/map-0.png")
     bg_width = game_bg.get_width()
     bg_height = game_bg.get_height()
+    field = load_game_bg("assets/img/map/map-1.png")
 
     player_beam_down = Player_beam_down(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, 2, 5)
     player = Player_idle(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, 2, 5)
+
+    house_1a_1 = Building('house_2a', 000, 000)
 
     while game_active:
         clock.tick(FPS)
 
         # Draw the game background
         draw_game_bg(screen, game_bg, bg_scroll)
+        draw_game_bg(screen, field, bg_scroll)
 
         # Always draw beam first so it appears behind the player
         player_beam_down.update(player.rect)
         player_beam_down.draw()
 
+        house_1a_1.draw(field)
         player.update()
         player.draw()
 
