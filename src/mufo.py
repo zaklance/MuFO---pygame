@@ -439,7 +439,9 @@ def run_game():
     player_beam_down = Player_beam_down(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, 2, 5)
     player = Player_idle(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, 2, 5)
 
-    house_1a_1 = Building('house_2a', 000, 000)
+    # Create buildings
+    house_1a_1 = Building('house_1a', 500, 300, flip=True)
+    house_1a_2 = Building('house_1a', 300, 300)  # This one is not flipped
 
     while game_active:
         clock.tick(FPS)
@@ -452,7 +454,10 @@ def run_game():
         player_beam_down.update(player.rect)
         player_beam_down.draw()
 
-        house_1a_1.draw(field)
+        # Draw buildings
+        house_1a_1.draw(screen)
+        house_1a_2.draw(screen)
+
         player.update()
         player.draw()
 
@@ -460,7 +465,7 @@ def run_game():
         bg_scroll = update_bg_scroll(bg_scroll, screen_scroll, bg_width, bg_height, SCREEN_WIDTH, SCREEN_HEIGHT)
 
         # Update mouse control
-        mouse_control.update(screen)
+        mouse_control.update(screen, player)
 
         # Process events
         for event in pygame.event.get():
