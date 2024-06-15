@@ -13,16 +13,19 @@ class Enemies(pygame.sprite.Sprite):
         self.action = 0
         self.update_time = pygame.time.get_ticks()
 
-        class_name = self.__class__.__name__.lower()        
+        class_name = self.__class__.__name__.lower()
+        
+        # Update with more classifications if file names differ even more
+        if "bang" in class_name or "snap" in class_name:
+            folder_path = f'assets/img/enemy/action/people/{class_name}/'
+        else:
+            folder_path = f'assets/img/enemy/moving/people/{class_name}/'
 
-       # Load images for target
-        temp_list = []
-        # Count number of files in the folder
-        folder_path = f'assets/img/enemy/moving/people/{class_name}/'
         if not os.path.exists(folder_path):
             print(f"Error: Folder '{folder_path}' not found.")
             return  # Or handle the error as appropriate
 
+        temp_list = []
         num_of_frames = len(os.listdir(folder_path))
         for i in range(num_of_frames):
             img_path = os.path.join(folder_path, f'{i}.png')
@@ -69,6 +72,15 @@ class Cop_2_Bang(Enemies):
     def __init__(self, x, y, scale, speed=0):
         super().__init__(x, y, scale, speed)
 
+class Conspiracy(Enemies):
+    def __init__(self, x, y, scale, speed=0):
+        super().__init__(x, y, scale, speed)
+
+class Conspiracy_Snap(Enemies):
+    def __init__(self, x, y, scale, speed=0):
+        super().__init__(x, y, scale, speed)
+
+
 def main():
     pygame.init()
 
@@ -79,13 +91,15 @@ def main():
     pygame.display.set_caption('MuFO Targets')
 
     clock = pygame.time.Clock()
-    FPS = 8
+    FPS = 4
 
     cop_scale = 2.5
     cop_1 = Cop_1(100, 100, cop_scale, 5)
     cop_2 = Cop_2(300, 300, cop_scale, 5)
     cop_1_bang = Cop_1_Bang(100, 300, cop_scale, 5)
     cop_2_bang = Cop_2_Bang(300, 500, cop_scale, 5)
+    conspiracy = Conspiracy(500, 300, cop_scale, 5)
+    conspiracy_snap = Conspiracy_Snap(500, 500, cop_scale, 5)
 
     running = True
     while running:
@@ -100,11 +114,17 @@ def main():
         cop_2.update()
         cop_2.draw(screen) 
 
+        conspiracy.update()
+        conspiracy.draw(screen)
+
         cop_1_bang.update()
         cop_1_bang.draw(screen) 
 
         cop_2_bang.update()
-        cop_2_bang.draw(screen) 
+        cop_2_bang.draw(screen)
+
+        conspiracy_snap.update()
+        conspiracy_snap.draw(screen)
 
         pygame.display.flip()
         clock.tick(FPS)

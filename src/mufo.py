@@ -1,8 +1,10 @@
+from mouse import MouseControl
 import pygame
 import os
 from map import load_game_bg, draw_game_bg, update_bg_scroll
-from leaderboard import Result, Player, Game, Score
-
+from leaderboard import Result, Game, Score
+from target import Targets
+from enemy import Enemies
 
 # Load pygame
 pygame.init()
@@ -56,6 +58,10 @@ paused = False
 # Define global variable for Score
 current_score = Score(None, None)
 
+# Targets and Enemies Sprite groups 
+targets = pygame.sprite.Group()
+enemies = pygame.sprite.Group()
+
 # Load background frames for title screen
 current_frame = 0
 background_frames = []
@@ -95,73 +101,49 @@ class Button():
         selected_sound.play()
         self.function()
 
-# Create Character
 class Character(pygame.sprite.Sprite):
-    def __init__(self, char_type, x, y, scale, speed):
-        pygame.sprite.Sprite.__init__(self)
-        self.char_type = char_type
-        self.speed = speed
-        self.direction = 1
-        self.flip = False
+    def __init__(self, x, y, scale, speed):
+        super().__init__()
         self.animation_list = []
+        self.flip = False
         self.frame_index = 0
-        self.action = 0
         self.update_time = pygame.time.get_ticks()
-
-        # Load idle animation images
+        self.speed = speed
         self.load_images('idle', scale)
-
-        # Loead beam down animation images
-        self.load_images('beam_down', scale)
-
-        self.image = self.animation_list[self.action][self.frame_index]
+        self.image = self.animation_list[self.frame_index]
         self.rect = self.image.get_rect()
         self.rect.center = (x, y)
 
     def load_images(self, action, scale):
-        temp_list = []
-        folder_path = f'assets/img/{self.char_type}/{action}/'
+        self.animation_list = []
+        folder_path = f'assets/img/player/{action}/'
         if not os.path.exists(folder_path):
             print(f"Error: Folder '{folder_path}' not found.")
-            return
-
+            return  # Or handle the error as appropriate
+    
         num_of_frames = len(os.listdir(folder_path))
         for i in range(num_of_frames):
             img_path = os.path.join(folder_path, f'{i}.png')
             if not os.path.exists(img_path):
                 print(f"Warning: File '{img_path}' not found.")
-                continue
+                continue  # Skip this frame and move to the next one
 
             img = pygame.image.load(img_path)
             img = pygame.transform.scale(img, (int(img.get_width() * scale), int(img.get_height() * scale)))
-            temp_list.append(img)
+            self.animation_list.append(img)
 
-        self.animation_list.append(temp_list)
-    
+class Player_idle(Character):
+    def __init__(self, x, y, scale, speed):
+        super().__init__(x, y, scale, speed)
+        self.load_images('idle', scale)
+        self.image = self.animation_list[0]
+
     def update(self):
-        # Update animation frames
-        self.image = self.animation_list[self.action][self.frame_index]
+        self.image = self.animation_list[self.frame_index]
         if pygame.time.get_ticks() - self.update_time > 100:
             self.update_time = pygame.time.get_ticks()
-            self.frame_index += self.direction
-            if self.frame_index >= len(self.animation_list[self.action]):
-                self.frame_index = 0
-            elif self.frame_index < 0:
-                self.frame_index = len(self.animation_list[self.action]) - 1
-
-    def handle_event(self, event):
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_SPACE:
-                if self.action != 1:  # Only activate beam down animation if not already active
-                    self.action = 1  # Set action to beam down
-                    self.frame_index = 0
-        elif event.type == pygame.KEYUP:
-            if event.key == pygame.K_SPACE:
-                if self.action == 1:  # Deactivate beam down animation on key release
-                    self.action = 0  # Set action back to idle
-                    self.frame_index = 0
-                    self.direction = 1  # Reset direction
-
+            self.frame_index = (self.frame_index + 1) % len(self.animation_list)
+    
     def move(self, moving_left, moving_right, moving_up, moving_down, threshold_x, threshold_y):
         screen_scroll = [0, 0]
         dx = 0
@@ -201,19 +183,60 @@ class Character(pygame.sprite.Sprite):
 
         return screen_scroll
 
-    def draw(self, screen):
-        if self.action == 0:
-            # Draw idle animation
-            screen.blit(pygame.transform.flip(self.animation_list[self.action][self.frame_index], self.flip, False), self.rect)
-        elif self.action == 1:
-            # Draw beam down animation
-            screen.blit(pygame.transform.flip(self.animation_list[self.action][self.frame_index], self.flip, False), self.rect)
+    def draw(self):
+        screen.blit(pygame.transform.flip(self.image, self.flip, False), self.rect)
 
-player = Character('player', SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, 2, 5)
+class Player_beam_down(Character):
+    def __init__(self, x, y, scale, speed):
+        super().__init__(x, y, scale, speed)
+        self.load_images('beam_down', scale)
+        self.is_beam_active = False
+        self.reverse = False
+        self.spacebar_held = False
+        self.opacity = 255
+
+    def set_opacity(self, opacity):
+        self.opacity = opacity
+        for img in self.animation_list: 
+            img.set_alpha(self.opacity)
+
+    def start_beam(self):
+        self.is_beam_active = True
+        self.reverse = False
+
+    def end_beam(self):
+        self.reverse = True
+
+    def update(self, player_rect):
+        if self.is_beam_active:
+            self.rect.center = player_rect.center
+            self.image = self.animation_list[self.frame_index]
+            if pygame.time.get_ticks() - self.update_time > 100:
+                self.update_time = pygame.time.get_ticks()
+                if not self.reverse:
+                    if self.frame_index < len(self.animation_list) - 1:
+                        self.frame_index += 1
+                else:
+                    if self.frame_index > 0:
+                        self.frame_index -= 1
+                    else:
+                        self.is_beam_active = False
+
+    def draw(self):
+        if self.is_beam_active:
+            screen.blit(pygame.transform.flip(self.image, self.flip, False), self.rect)
+
+# player_beam_down = Player_beam_down(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, 2, 5)
+# player = Player_idle(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, 2, 5)
+
+# player_beam_down.set_opacity(128)
 
 # Define the threshold area
 threshold_x = SCREEN_WIDTH // 3
 threshold_y = SCREEN_HEIGHT // 4
+
+# Initialize MouseControl
+mouse_control = MouseControl()
 
 def draw_title_bg(background_frames):
     global current_frame
@@ -244,7 +267,7 @@ def show_leaderboard():
     ]
 
     trophy_image = pygame.image.load('assets/img/leaderboard/trophy.png')
-    trophy_image = pygame.transform.scale(trophy_image, (30, 30))
+    trophy_image = pygame.transform.scale(trophy_image, (40, 40))
 
     while game_active:
         for event in pygame.event.get():
@@ -264,7 +287,7 @@ def show_leaderboard():
         screen.blit(trophy_image, (SCREEN_WIDTH // 2 - title.get_width() // 2 - trophy_width - 10, 50))  # Left side
         screen.blit(trophy_image, (SCREEN_WIDTH // 2 + title.get_width() // 2 + 10, 50))  # Right side
 
-        #Determine maximum width needed for the name column
+        # Determine maximum width needed for the name column
         max_name_width = max(custom_font.size(username)[0] for username, game_title, score in leaderboard_data[:10])
         score_width = max(custom_font.size(f'{score}')[0] for _, _, score in leaderboard_data[:10])
 
@@ -274,7 +297,7 @@ def show_leaderboard():
         header_x = SCREEN_WIDTH // 2 - (name_header.get_width() + score_header.get_width()) // 2
         screen.blit(name_header, (header_x, 150))
         screen.blit(score_header, (header_x + max_name_width + 150, 150))  # Adjusting spacing
- 
+
         y_offset = 200
         rank_x = SCREEN_WIDTH // 2 - 300
 
@@ -294,7 +317,6 @@ def show_leaderboard():
 
         pygame.display.update()
         clock.tick(FPS)
-
 
 def pause_screen():
     global paused, current_frame
@@ -409,16 +431,12 @@ def run_game():
     global game_active, paused, moving_left, moving_right, moving_up, moving_down, screen_scroll, bg_scroll, current_score
     
     # Load game background image for active play
-    pygame.init()
-    screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-    pygame.display.set_caption("MuFO")
-    clock = pygame.time.Clock()
-
     game_bg = load_game_bg("assets/img/map/map-0.png")
     bg_width = game_bg.get_width()
     bg_height = game_bg.get_height()
 
-    player = Character('player', SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, 2, 5)
+    player_beam_down = Player_beam_down(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, 2, 5)
+    player = Player_idle(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, 2, 5)
 
     while game_active:
         clock.tick(FPS)
@@ -426,16 +444,20 @@ def run_game():
         # Draw the game background
         draw_game_bg(screen, game_bg, bg_scroll)
 
+        # Always draw beam first so it appears behind the player
+        player_beam_down.update(player.rect)
+        player_beam_down.draw()
+
         player.update()
-        player.draw(screen)
+        player.draw()
 
         screen_scroll = player.move(moving_left, moving_right, moving_up, moving_down, threshold_x, threshold_y)
         bg_scroll = update_bg_scroll(bg_scroll, screen_scroll, bg_width, bg_height, SCREEN_WIDTH, SCREEN_HEIGHT)
 
-        # DEAR SANDRO, MAKE SURE THIS IS UNCOMMENTED WHEN SCORES ARE INCREMENTING
-        # if player.rect.colliderect(target.rect):
-        #     current_score.update_score(target_points=10)
+        # Update mouse control
+        mouse_control.update(screen)
 
+        # Process events
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 game_active = False
@@ -446,14 +468,16 @@ def run_game():
                 if event.key == pygame.K_d:
                     moving_right = True
                 if event.key == pygame.K_w:
-                    moving_up = True
+                    moving_up = True 
                 if event.key == pygame.K_s:
                     moving_down = True
                 if event.key == pygame.K_ESCAPE:
                     paused = True
-                    pause_screen()
-                player.handle_event(event)
-                    
+                    pause_screen()  
+                if event.key == pygame.K_SPACE:
+                    player_beam_down.spacebar_held = True
+                    if not player_beam_down.is_beam_active:
+                        player_beam_down.start_beam()
             if event.type == pygame.KEYUP:
                 if event.key == pygame.K_a:
                     moving_left = False
@@ -463,6 +487,12 @@ def run_game():
                     moving_up = False
                 if event.key == pygame.K_s:
                     moving_down = False
+                if event.key == pygame.K_SPACE:
+                    player_beam_down.spacebar_held = False
+                    player_beam_down.end_beam()
+
+            # Process mouse events
+            mouse_control.process_events(event)
 
         pygame.display.update()
 
