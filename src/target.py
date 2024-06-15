@@ -1,5 +1,4 @@
 import pygame
-import random
 import os
 
 # Target Classes: 
@@ -9,27 +8,19 @@ import os
 
 class Targets(pygame.sprite.Sprite):
 
-<<<<<<< HEAD
-    def __init__(self, x, y, scale, speed):
-=======
     def __init__(self, x, y, scale, speed=0):
->>>>>>> 839e884cc24ce9ee071ffe2e55c59bd9d4420a27
         pygame.sprite.Sprite.__init__(self)
         self.speed = speed
         self.direction = 1
         self.flip = False
-        self.animation_list = self.load_animations()
+        self.animation_list = []
         self.frame_index = 0
         self.action = 0
         self.update_time = pygame.time.get_ticks()
 
         class_name = self.__class__.__name__.lower()        
 
-<<<<<<< HEAD
-        #load images for target
-=======
        # Load images for target
->>>>>>> 839e884cc24ce9ee071ffe2e55c59bd9d4420a27
         temp_list = []
         # Count number of files in the folder
         folder_path = f'assets/img/target/moving/people/{class_name}/'
@@ -50,76 +41,19 @@ class Targets(pygame.sprite.Sprite):
 
         self.animation_list.append(temp_list)
         
-<<<<<<< HEAD
-        
-=======
->>>>>>> 839e884cc24ce9ee071ffe2e55c59bd9d4420a27
         self.image = self.animation_list[self.action][self.frame_index]
         self.rect = self.image.get_rect()
         self.rect.center = (x, y)
         
     def update(self):
         # Update animation frames
-<<<<<<< HEAD
-        self.image = self.animation_list[self.action][self.frame_index]
         if pygame.time.get_ticks() - self.update_time > 100:
-=======
-        if pygame.time.get_ticks() - self.update_time > 100: # animation_cooldown
->>>>>>> 839e884cc24ce9ee071ffe2e55c59bd9d4420a27
             self.update_time = pygame.time.get_ticks()
             self.frame_index += 1
             if self.frame_index >= len(self.animation_list[self.action]):
                 self.frame_index = 0
-<<<<<<< HEAD
-
-    def draw(self, screen):
-        # Draw the target on the screen
-        screen.blit(self.image, self.rect)
-        
-class Cows(Targets):
-    def __init__(self, x, y, scale, speed):
-        super().__init__(x, y, scale, speed)
-
-class Basic_Cow(Cows):
-    def __init__(self, x, y, scale, speed):
-        super().__init__(x, y, scale, speed)
-
-class Cow_1(Basic_Cow):
-    def __init__(self, x, y, scale, speed):
-        super().__init__(x, y, scale, speed)
-
-class Best_Cow(Cows):
-    def __init__(self, x, y, scale, speed):
-        super().__init__(x, y, scale, speed)
-
-class Cow_2(Basic_Cow):
-    def __init__(self, x, y, scale, speed):
-        super().__init__(x, y, scale, speed)
-
-class Cow_3(Best_Cow):
-    def __init__(self, x, y, scale, speed):
-        super().__init__(x, y, scale, speed)
-
-class Chickens(Targets):
-    def __init__(self, x, y, scale, speed):
-        super().__init__(x, y, scale, speed)
-
-=======
         self.image = self.animation_list[self.action][self.frame_index]
 
-        self.rect.x += random.choice([-1, 1]) * self.speed
-        self.rect.y += random.choice([-1, 1]) * self.speed
-
-        # Keep within the screen boundaries
-        if self.rect.left < 0:
-            self.rect.left = 0
-        if self.rect.right > SCREEN_WIDTH:
-            self.rect.right = SCREEN_WIDTH
-        if self.rect.top < 0:
-            self.rect.top = 0
-        if self.rect.bottom > SCREEN_HEIGHT:
-            self.rect.bottom = SCREEN_HEIGHT
-
     def draw(self, screen):
         # Draw the target on the screen
         screen.blit(self.image, self.rect)
@@ -152,7 +86,6 @@ class Chickens(Targets):
     def __init__(self, x, y, scale, speed):
         super().__init__(x, y, scale, speed)
 
->>>>>>> 839e884cc24ce9ee071ffe2e55c59bd9d4420a27
 class Chicken_1(Chickens):
     def __init__(self, x, y, scale, speed):
         super().__init__(x, y, scale, speed)
@@ -205,11 +138,7 @@ def main():
 
     man_scale = 2.5
     man_1 = Man_1(500, 100, man_scale, 5)
-<<<<<<< HEAD
-    man_2 = Man_2( 500, 300, man_scale, 5)
-=======
     man_2 = Man_2(500, 300, man_scale, 5)
->>>>>>> 839e884cc24ce9ee071ffe2e55c59bd9d4420a27
 
     woman_scale = 2.5
     woman_1 = Woman_1(300, 500, woman_scale, 5)

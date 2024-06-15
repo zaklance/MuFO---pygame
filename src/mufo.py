@@ -117,6 +117,36 @@ class Character(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.center = (x, y)
 
+    def load_images(self, action, scale):
+        self.animation_list = []
+        folder_path = f'assets/img/player/{action}/'
+        if not os.path.exists(folder_path):
+            print(f"Error: Folder '{folder_path}' not found.")
+            return  # Or handle the error as appropriate
+    
+        num_of_frames = len(os.listdir(folder_path))
+        for i in range(num_of_frames):
+            img_path = os.path.join(folder_path, f'{i}.png')
+            if not os.path.exists(img_path):
+                print(f"Warning: File '{img_path}' not found.")
+                continue  # Skip this frame and move to the next one
+
+            img = pygame.image.load(img_path)
+            img = pygame.transform.scale(img, (int(img.get_width() * scale), int(img.get_height() * scale)))
+            self.animation_list.append(img)
+
+class Player_idle(Character):
+    def __init__(self, x, y, scale, speed):
+        super().__init__(x, y, scale, speed)
+        self.load_images('idle', scale)
+        self.image = self.animation_list[0]
+
+    def update(self):
+        self.image = self.animation_list[self.frame_index]
+        if pygame.time.get_ticks() - self.update_time > 100:
+            self.update_time = pygame.time.get_ticks()
+            self.frame_index = (self.frame_index + 1) % len(self.animation_list)
+    
     def move(self, moving_left, moving_right, moving_up, moving_down, threshold_x, threshold_y):
         screen_scroll = [0, 0]
         dx = 0
@@ -159,8 +189,50 @@ class Character(pygame.sprite.Sprite):
     def draw(self):
         screen.blit(pygame.transform.flip(self.image, self.flip, False), self.rect)
 
-player = Character('player', SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, 2, 5)
-target = Character('target', 800, 450, .15, 5)
+class Player_beam_down(Character):
+    def __init__(self, x, y, scale, speed):
+        super().__init__(x, y, scale, speed)
+        self.load_images('beam_down', scale)
+        self.is_beam_active = False
+        self.reverse = False
+        self.spacebar_held = False
+        self.opacity = 255
+
+    def set_opacity(self, opacity):
+        self.opacity = opacity
+        for img in self.animation_list: 
+            img.set_alpha(self.opacity)
+
+    def start_beam(self):
+        self.is_beam_active = True
+        self.reverse = False
+
+    def end_beam(self):
+        self.reverse = True
+
+    def update(self, player_rect):
+        if self.is_beam_active:
+            self.rect.center = player_rect.center
+            self.image = self.animation_list[self.frame_index]
+            if pygame.time.get_ticks() - self.update_time > 100:
+                self.update_time = pygame.time.get_ticks()
+                if not self.reverse:
+                    if self.frame_index < len(self.animation_list) - 1:
+                        self.frame_index += 1
+                else:
+                    if self.frame_index > 0:
+                        self.frame_index -= 1
+                    else:
+                        self.is_beam_active = False
+
+    def draw(self):
+        if self.is_beam_active:
+            screen.blit(pygame.transform.flip(self.image, self.flip, False), self.rect)
+
+# player_beam_down = Player_beam_down(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, 2, 5)
+# player = Player_idle(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, 2, 5)
+
+# player_beam_down.set_opacity(128)
 
 # Define the threshold area
 threshold_x = SCREEN_WIDTH // 3
@@ -366,12 +438,20 @@ def run_game():
     bg_width = game_bg.get_width()
     bg_height = game_bg.get_height()
 
+    player_beam_down = Player_beam_down(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, 2, 5)
+    player = Player_idle(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, 2, 5)
+
     while game_active:
         clock.tick(FPS)
 
         # Draw the game background
         draw_game_bg(screen, game_bg, bg_scroll)
 
+        # Always draw beam first so it appears behind the player
+        player_beam_down.update(player.rect)
+        player_beam_down.draw()
+
+        player.update()
         player.draw()
 
         screen_scroll = player.move(moving_left, moving_right, moving_up, moving_down, threshold_x, threshold_y)
