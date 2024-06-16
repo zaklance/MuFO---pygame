@@ -1,5 +1,6 @@
 import pygame
 
+
 def load_game_bg(image_path):
     return pygame.image.load(image_path)
 

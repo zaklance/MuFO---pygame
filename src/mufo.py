@@ -55,6 +55,9 @@ selected_sound = pygame.mixer.Sound(selected_sound_path)
 game_active = False
 paused = False
 
+# Initialize MouseControl
+mouse_control = MouseControl()
+
 # Define global variable for Score
 current_score = Score(None, None)
 
@@ -436,8 +439,8 @@ def run_game():
     bg_height = game_bg.get_height()
     field = load_game_bg("assets/img/map/map-1.png")
 
-    player_beam_down = Player_beam_down(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, 2, 5)
     player = Player_idle(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, 2, 5)
+    player_beam_down = Player_beam_down(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, 2, 5)
 
     # Create buildings
     # Row 1, Block 1
@@ -598,15 +601,16 @@ def run_game():
         # Always draw beam first so it appears behind the player
         player_beam_down.update(player.rect)
         player_beam_down.draw()
+        
+        # Update mouse control with player object
+        mouse_control.update(screen, player)
 
         player.update()
         player.draw()
+        
 
         screen_scroll = player.move(moving_left, moving_right, moving_up, moving_down, threshold_x, threshold_y)
         bg_scroll = update_bg_scroll(bg_scroll, screen_scroll, bg_width, bg_height, SCREEN_WIDTH, SCREEN_HEIGHT)
-
-        # Update mouse control
-        mouse_control.update(screen)
 
         # Process events
         for event in pygame.event.get():
