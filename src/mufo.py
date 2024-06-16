@@ -1,7 +1,7 @@
 from mouse import MouseControl
 import pygame
 import os
-from map import load_game_bg, draw_game_bg, update_bg_scroll
+from map import load_game_bg, draw_game_bg, update_bg_scroll, Building
 from leaderboard import Result, Game, Score
 from target import Targets
 from enemy import Enemies
@@ -434,15 +434,166 @@ def run_game():
     game_bg = load_game_bg("assets/img/map/map-0.png")
     bg_width = game_bg.get_width()
     bg_height = game_bg.get_height()
+    field = load_game_bg("assets/img/map/map-1.png")
 
     player_beam_down = Player_beam_down(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, 2, 5)
     player = Player_idle(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, 2, 5)
+
+    # Create buildings
+    # Row 1, Block 1
+    watertower = Building('watertower', 1051, 1169)
+    house_4a_1 = Building('house_4a', 1713, 1368, True)  # This one is not flipped
+    house_2a_1 = Building('house_2a', 1903, 1368, True)
+    house_1a_1 = Building('house_1a', 2092, 1365) # This one is not flipped
+    house_3b_1 = Building('house_3b', 2282, 1370, True)
+    # Row 1, Block 2
+    house_1c_1 = Building('house_1c', 2813, 1365, True)
+    house_4a_2 = Building('house_4a', 3002, 1368, True)
+    circus = Building('circus', 3388, 1360)
+    # Row 2, Block 1
+    house_4b_1 = Building('house_4b', 1145, 1726)
+    house_1a_2 = Building('house_1a', 1524, 1724, True)
+    house_1c_2 = Building('house_1c', 1713, 1724, True)
+    house_3a_1 = Building('house_3a', 1903, 1729, True)
+    house_2c_1 = Building('house_2c', 2092, 1725)
+    house_1a_3 = Building('house_1a', 2282, 1724)
+    # Row 2, Block 2
+    house_2a_2 = Building('house_2a', 2623, 1725, True)
+    house_1b_1 = Building('house_1b', 2813, 1724)
+    house_3b_2 = Building('house_3b', 3002, 1725, True)
+    house_4a_3 = Building('house_4a', 3192, 1726, True)
+    house_1a_4 = Building('house_1a', 3382, 1724, True)
+    house_2c_2 = Building('house_2c', 3761, 1725)
+    house_1c_3 = Building('house_1c', 3950, 1724, True)
+    # Row 3, Block 1
+    house_1b_2 = Building('house_1b', 803, 2093)
+    house_3a_2 = Building('house_3a', 1145, 2099)
+    house_2b_1 = Building('house_2b', 1334, 2093, True)
+    house_1b_3 = Building('house_1b', 1713, 2093)
+    house_4b_2 = Building('house_4b', 1903, 2096, True)
+    grocery = Building('grocery', 2092, 1994)
+    # Row 3, Block 2
+    church = Building('church', 2623, 2095)
+    house_2b_2 = Building('house_2b', 3002, 2095, True)
+    house_3a_3 = Building('house_3a', 3192, 2094, True)
+    house_1b_4 = Building('house_1b', 3382, 2093, True)
+    house_1a_5 = Building('house_1a', 3571, 2093)
+    house_4a_4 = Building('house_4a', 3762, 2096)
+    house_2a_2 = Building('house_2a', 3950, 2095)
+    # Row 4, Block 1
+    house_1c_4 = Building('house_1c', 1524, 2452, True)
+    house_3a_4 = Building('house_3a', 1713, 2453)
+    house_2a_3 = Building('house_2a', 1903, 2455, True)
+    house_4a_5 = Building('house_4a', 2092, 2454, True)
+    house_1b_5 = Building('house_1b', 2282, 2452, True)
+    # Row 4, Block 2
+    house_3b_3 = Building('house_3b', 2623, 2454, True)
+    house_1a_6 = Building('house_1a', 2813, 2452)
+    house_1b_6 = Building('house_1b', 3002, 2452)
+    house_4a_6 = Building('house_4a', 3192, 2454, True)
+    house_2c_3 = Building('house_2c', 3382, 2454)
+    house_1c_5 = Building('house_1c', 3571, 2452)
+    house_1a_7 = Building('house_1a', 3950, 2452, True)
+    # Row 5, Block 1
+    house_1a_8 = Building('house_1a', 1903, 2821)
+    house_3b_4 = Building('house_3b', 2092, 2822, True)
+    house_3a_5 = Building('house_3a', 2282, 2827)
+    # Row 5, Block 2
+    house_1c_6 = Building('house_1c', 2623, 2821, True)
+    house_3a_6 = Building('house_3a', 2813, 2827)
+    house_2a_4 = Building('house_2a', 3002, 2823)
+    house_1b_7 = Building('house_1b', 3192, 2821)
+    house_4a_7 = Building('house_4a', 3571, 2824)
+    house_2b_3 = Building('house_2b', 3761, 2823, True)
+    house_3b_5 = Building('house_3b', 3950, 2827)
+    # Row 6, Block 1
+    house_1a_9 = Building('house_1a', 1524, 3180, True)
+    house_4b_3 = Building('house_4b', 2623, 3183, True)
+    house_2b_4 = Building('house_2b', 2813, 3182)
+    house_1c_7 = Building('house_1c', 3382, 3180, True)
+    school = Building('school', 3972, 3202)
+    wheat = Building('wheat', 521, 3966)
 
     while game_active:
         clock.tick(FPS)
 
         # Draw the game background
         draw_game_bg(screen, game_bg, bg_scroll)
+
+        # Draw buildings
+        # Row 1, Block 1
+        watertower.draw(field)
+        house_4a_1.draw(field)
+        house_2a_1.draw(field)
+        house_1a_1.draw(field)
+        house_3b_1.draw(field)
+        # Row 1, Block 2
+        house_1c_1.draw(field)
+        house_4a_2.draw(field)
+        circus.draw(field)
+        # Row 2, Block 1
+        house_4b_1.draw(field)
+        house_1a_2.draw(field)
+        house_1c_2.draw(field)
+        house_3a_1.draw(field)
+        house_2c_1.draw(field)
+        house_1a_3.draw(field)
+        # Row 2, Block 2
+        house_2a_2.draw(field)
+        house_1b_1.draw(field)
+        house_3b_2.draw(field)
+        house_4a_3.draw(field)
+        house_1a_4.draw(field)
+        house_2c_2.draw(field)
+        house_1c_3.draw(field)
+        # Row 3, Block 1
+        house_1b_2.draw(field)
+        house_3a_2.draw(field)
+        house_2b_1.draw(field)
+        house_1b_3.draw(field)
+        house_4b_2.draw(field)
+        grocery.draw(field)
+        # Row 3, Block 2
+        church.draw(field)
+        house_2b_2.draw(field)
+        house_3a_3.draw(field)
+        house_1b_4.draw(field)
+        house_1a_5.draw(field)
+        house_4a_4.draw(field)
+        house_2a_2.draw(field)
+        # Row 4, Block 1
+        house_1c_4.draw(field)
+        house_3a_4.draw(field)
+        house_2a_3.draw(field)
+        house_4a_5.draw(field)
+        house_1b_5.draw(field)
+        # Row 4, Block 2
+        house_3b_3.draw(field)
+        house_1b_6.draw(field)
+        house_1a_6.draw(field)
+        house_4a_6.draw(field)
+        house_2c_3.draw(field)
+        house_1c_5.draw(field)
+        house_1a_7.draw(field)
+        # Row 5, Block 1
+        house_1a_8.draw(field)
+        house_3b_4.draw(field)
+        house_3a_5.draw(field)
+        # Row 5, Block 2
+        house_1c_6.draw(field)
+        house_3a_6.draw(field)
+        house_2a_4.draw(field)
+        house_1b_7.draw(field)
+        house_4a_7.draw(field)
+        house_2b_3.draw(field)
+        house_3b_5.draw(field)
+        # Row 6, Block 1
+        house_1a_9.draw(field)
+        house_4b_3.draw(field)
+        house_2b_4.draw(field)
+        house_1c_7.draw(field)
+        school.draw(field)
+        wheat.draw(field)
 
         # Always draw beam first so it appears behind the player
         player_beam_down.update(player.rect)
