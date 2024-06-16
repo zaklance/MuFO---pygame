@@ -12,7 +12,7 @@ class Building(pygame.sprite.Sprite):
         if flip:
             self.image = pygame.transform.flip(self.image, True, False)
         self.rect = self.image.get_rect()
-        self.rect.center = (x, y)
+        self.rect.bottomleft = (x, y)
 
     def draw(self, screen):
         screen.blit(self.image, self.rect)
