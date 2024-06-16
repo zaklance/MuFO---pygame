@@ -54,7 +54,7 @@ navigation_sound = pygame.mixer.Sound(navigation_sound_path)
 selected_sound = pygame.mixer.Sound(selected_sound_path)
 
 # Global game state
-game_active = False
+game_active = False 
 paused = False
 
 # Initialize MouseControl

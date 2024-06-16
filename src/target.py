@@ -57,13 +57,6 @@ class Targets(pygame.sprite.Sprite):
                 self.frame_index = 0
         self.image = self.animation_list[self.action][self.frame_index]
 
-<<<<<<< HEAD
-=======
-        if isinstance(self, Cows):
-            self.x += self.dx
-            self.y += self.dy
-
->>>>>>> groups
     def draw(self, screen):
         # Draw the target on the screen
         screen.blit(self.image, self.rect)
