@@ -1,7 +1,7 @@
 from mouse import MouseControl
 import pygame
 import os
-from map import load_game_bg, draw_game_bg, update_bg_scroll, Building
+from map import load_game_bg, draw_game_bg, update_bg_scroll, Building, Building
 from leaderboard import Result, Game, Score
 from target import Targets
 from enemy import Enemies
@@ -54,6 +54,9 @@ selected_sound = pygame.mixer.Sound(selected_sound_path)
 # Global game state
 game_active = False
 paused = False
+
+# Initialize MouseControl
+mouse_control = MouseControl()
 
 # Define global variable for Score
 current_score = Score(None, None)
@@ -435,7 +438,9 @@ def run_game():
     bg_width = game_bg.get_width()
     bg_height = game_bg.get_height()
     field = load_game_bg("assets/img/map/map-1.png")
+    field = load_game_bg("assets/img/map/map-1.png")
 
+    player = Player_idle(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, 2, 5)
     player_beam_down = Player_beam_down(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, 2, 5)
     player = Player_idle(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, 2, 5)
 
@@ -610,6 +615,7 @@ def run_game():
 
         player.update()
         player.draw()
+        
 
         screen_scroll = player.move(moving_left, moving_right, moving_up, moving_down, threshold_x, threshold_y)
         bg_scroll = update_bg_scroll(bg_scroll, screen_scroll, bg_width, bg_height, SCREEN_WIDTH, SCREEN_HEIGHT)

@@ -1,5 +1,4 @@
 import pygame
-import random
 import os
 
 # Target Classes: 
@@ -14,7 +13,7 @@ class Targets(pygame.sprite.Sprite):
         self.speed = speed
         self.direction = 1
         self.flip = False
-        self.animation_list = self.load_animations()
+        self.animation_list = []
         self.frame_index = 0
         self.action = 0
         self.update_time = pygame.time.get_ticks()
@@ -48,25 +47,12 @@ class Targets(pygame.sprite.Sprite):
         
     def update(self):
         # Update animation frames
-        if pygame.time.get_ticks() - self.update_time > 100: # animation_cooldown
+        if pygame.time.get_ticks() - self.update_time > 100:
             self.update_time = pygame.time.get_ticks()
             self.frame_index += 1
             if self.frame_index >= len(self.animation_list[self.action]):
                 self.frame_index = 0
         self.image = self.animation_list[self.action][self.frame_index]
-
-        self.rect.x += random.choice([-1, 1]) * self.speed
-        self.rect.y += random.choice([-1, 1]) * self.speed
-
-        # Keep within the screen boundaries
-        if self.rect.left < 0:
-            self.rect.left = 0
-        if self.rect.right > SCREEN_WIDTH:
-            self.rect.right = SCREEN_WIDTH
-        if self.rect.top < 0:
-            self.rect.top = 0
-        if self.rect.bottom > SCREEN_HEIGHT:
-            self.rect.bottom = SCREEN_HEIGHT
 
     def draw(self, screen):
         # Draw the target on the screen
