@@ -538,10 +538,7 @@ def run_game():
     bg_width = game_bg.get_width()
     bg_height = game_bg.get_height()
     field = load_game_bg("assets/img/map/map-1.png")
-    field = load_game_bg("assets/img/map/map-1.png")
 
-    player = Player_idle(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, 2, 5)
-    player = Player_idle(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, 2, 5)
     player_beam_down = Player_beam_down(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, 2, 5)
     player = Player_idle(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, 2, 5)
 
@@ -620,8 +617,7 @@ def run_game():
     school = Building('school', 3972, 3202)
     wheat = Building('wheat', 521, 3966)
 
-
-
+    targets = initialize_targets()
 
     while game_active:
         clock.tick(FPS)
@@ -629,6 +625,10 @@ def run_game():
         # Draw the game background
         draw_game_bg(screen, game_bg, bg_scroll)
         draw_game_bg(screen, field, bg_scroll)
+
+        for target in targets: 
+            target.update()
+            target.draw(field)
 
         # Always draw beam first so it appears behind the player
         player_beam_down.update(player.rect)
@@ -711,9 +711,7 @@ def run_game():
         house_1c_7.draw(field)
         school.draw(field)
         wheat.draw(field)
-        
-        
-
+    
         player.update()
         player.draw()
         
