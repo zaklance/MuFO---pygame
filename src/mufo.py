@@ -453,6 +453,9 @@ def run_game():
         # Always draw beam first so it appears behind the player
         player_beam_down.update(player.rect)
         player_beam_down.draw()
+        
+        # Update mouse control
+        mouse_control.update(screen, player)
 
         # Draw buildings
         house_1a_1.draw(screen)
@@ -463,9 +466,6 @@ def run_game():
 
         screen_scroll = player.move(moving_left, moving_right, moving_up, moving_down, threshold_x, threshold_y)
         bg_scroll = update_bg_scroll(bg_scroll, screen_scroll, bg_width, bg_height, SCREEN_WIDTH, SCREEN_HEIGHT)
-
-        # Update mouse control
-        mouse_control.update(screen, player)
 
         # Process events
         for event in pygame.event.get():
