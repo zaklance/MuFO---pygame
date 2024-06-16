@@ -14,9 +14,39 @@ class Building(pygame.sprite.Sprite):
             self.image = pygame.transform.flip(self.image, True, False)
         self.rect = self.image.get_rect()
         self.rect.bottomleft = (x, y)
-
+        
     def draw(self, screen):
         screen.blit(self.image, self.rect)
+
+class House(Building):
+    def __init__(self, building, x, y, flip=False):
+        super().__init__(building, x, y, flip)
+        self.block = pygame.Rect(0, (self.image.get_height()-197), 153, 197)
+
+class Watertower(Building):
+    def __init__(self, building, x, y, flip=False):
+        super().__init__(building, x, y, flip)
+        self.block = pygame.Rect(0, (self.image.get_height()-165), 252, 165)
+        
+class Circus(Building):
+    def __init__(self, building, x, y, flip=False):
+        super().__init__(building, x, y, flip)
+        self.block = pygame.Rect(0, (self.image.get_height()-519), 687, 519)
+
+class Grocery(Building):
+    def __init__(self, building, x, y, flip=False):
+        super().__init__(building, x, y, flip)
+        self.block = pygame.Rect(0, (self.image.get_height()-186), 343, 186)
+
+class Church(Building):
+    def __init__(self, building, x, y, flip=False):
+        super().__init__(building, x, y, flip)
+        self.block = pygame.Rect(0, (self.image.get_height()-229), 296, 229)
+
+class School(Building):
+    def __init__(self, building, x, y, flip=False):
+        super().__init__(building, x, y, flip)
+        self.block = pygame.Rect(0, (self.image.get_height()-569), 164, 569), pygame.Rect(379, 49, 190, 217)
 
 
 def update_bg_scroll(bg_scroll, screen_scroll, bg_width, bg_height, screen_width, screen_height):
