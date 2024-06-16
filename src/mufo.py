@@ -1,9 +1,11 @@
 from mouse import MouseControl
+import random
 import pygame
 import os
 from map import load_game_bg, draw_game_bg, update_bg_scroll, Building
 from leaderboard import Result, Game, Score
-from target import Targets
+from target import Targets, Cows, Chickens, Civilians, Cow_1, Cow_2, Cow_3, Chicken_1, Chicken_2, Man_1, Man_2, Woman_1, Woman_2
+from target_vehicles import Target_vehicles, Marquis_1_rear, Marquis_2_rear, Marquis_3_rear, Wagon_1_rear, Wagon_2_rear, Wagon_3_rear
 from enemy import Enemies
 
 # Load pygame
@@ -62,8 +64,106 @@ mouse_control = MouseControl()
 current_score = Score(None, None)
 
 # Targets and Enemies Sprite groups 
-targets = pygame.sprite.Group()
-enemies = pygame.sprite.Group()
+def initialize_targets():
+    targets = pygame.sprite.Group()
+    target_vehicles = pygame.sprite.Group()
+    enemies = pygame.sprite.Group()
+
+    # Define common variables
+    civilians_scale = 1.25
+    chicken_scale = 1.75
+    cow_scale = 1
+    car_scale = 1
+    animation_speed_range = (1, 5)  # Random speed between 1 and 5 FPS (inclusive)
+
+    # Create civilian positions and types
+    civilian_positions = [
+        (1524, 3180), 
+        (1675, 3180),
+        (2479, 2120),
+        (2679, 2320),
+        (1000, 3200)
+    ]
+    civilian_types = [Man_1, Man_2, Woman_1, Woman_2]  # List of civilian classes
+
+    for position in civilian_positions:
+        x, y = position
+        civilian_type = random.choice(civilian_types)
+        civilian = civilian_type(x, y, civilians_scale, 5)
+        targets.add(civilian)
+
+    chicken_positions = [
+        (670, 2525), 
+        (720, 2700),
+        (850, 2625),
+        (1124, 3870), 
+        (1124, 3500), 
+        (1400, 3100),
+        (2080, 3260),
+        (2008, 3191),
+        (2071, 2999),
+        (2308, 3171),
+        (2421, 2949),
+        (2350, 3290),
+        (2290, 3250),
+        (2352, 3426),
+        (2978, 2760),
+        (2866, 3040),
+        (1700, 2052)
+    ]
+
+    for position in chicken_positions:
+        x, y = position
+        chicken_type = random.choice([Chicken_1, Chicken_2])
+        chicken = Chicken_1(x, y, chicken_scale, random.randint(*animation_speed_range))  # Random speed
+        targets.add(chicken)
+
+    cow_positions = [
+        (624, 2480), 
+        (580, 2620),
+        (775, 2680), 
+        (975, 2880), 
+        (1174, 3080),
+        (1300, 3450), 
+        (1550, 3540), 
+        (1650, 3650), 
+        (1775, 3740),
+        (1850, 3850), 
+        (2175, 3940), 
+        (724, 3820),
+        (770, 3420),
+        (815, 3250),
+        (2400, 3290),
+        (2260, 3260),
+        (2228, 3191),
+        (2171, 2999),
+        (2182, 3456),
+        (1938, 2720),
+        (2206, 2980),
+        (1760, 2512)
+    ]
+
+    for position in cow_positions:
+        x, y = position
+        cow_type = random.choice([Cow_1, Cow_2])
+        cow = cow_type(x, y, cow_scale, random.randint(*animation_speed_range))  # Random speed
+        targets.add(cow)
+
+    car_rear_positions = [
+        (2535, 4150),
+        (2535, 3950),
+        (2535, 3650),
+        (2535, 1950),
+        (2535, 1750)
+    ]
+    car_rear_types = [Marquis_1_rear, Marquis_2_rear, Marquis_3_rear, Wagon_1_rear, Wagon_2_rear, Wagon_3_rear]
+    
+    for position in car_rear_positions:
+        x, y = position
+        car_rear_type = random.choice(car_rear_types)
+        car_rear = car_rear_type(x, y, civilians_scale, 5)
+        targets.add(car_rear)
+    return targets
 
 # Load background frames for title screen
 current_frame = 0
@@ -438,7 +538,9 @@ def run_game():
     bg_width = game_bg.get_width()
     bg_height = game_bg.get_height()
     field = load_game_bg("assets/img/map/map-1.png")
+    field = load_game_bg("assets/img/map/map-1.png")
 
+    player = Player_idle(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, 2, 5)
     player = Player_idle(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, 2, 5)
     player_beam_down = Player_beam_down(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, 2, 5)
 
