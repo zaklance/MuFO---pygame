@@ -80,6 +80,9 @@ class Conspiracy_Snap(Enemies):
     def __init__(self, x, y, scale, speed=0):
         super().__init__(x, y, scale, speed)
 
+class Xfiles(Enemies):
+    def __init__(self, x, y, scale, speed=0):
+        super().__init__(x, y, scale, speed)
 
 def main():
     pygame.init()
@@ -100,6 +103,7 @@ def main():
     cop_2_bang = Cop_2_Bang(300, 500, cop_scale, 5)
     conspiracy = Conspiracy(500, 300, cop_scale, 5)
     conspiracy_snap = Conspiracy_Snap(500, 500, cop_scale, 5)
+    xfiles = Xfiles(500, 100, cop_scale, 5)
 
     running = True
     while running:
@@ -125,6 +129,9 @@ def main():
 
         conspiracy_snap.update()
         conspiracy_snap.draw(screen)
+
+        xfiles.update()
+        xfiles.draw(screen)
 
         pygame.display.flip()
         clock.tick(FPS)

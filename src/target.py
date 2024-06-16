@@ -1,6 +1,6 @@
 import pygame
-import random
 import os
+import random
 
 # Target Classes: 
 # Cows: Cow_1, Cow_2, Cow_3
@@ -14,10 +14,12 @@ class Targets(pygame.sprite.Sprite):
         self.speed = speed
         self.direction = 1
         self.flip = False
-        self.animation_list = self.load_animations()
+        self.animation_list = []
         self.frame_index = 0
         self.action = 0
         self.update_time = pygame.time.get_ticks()
+        self.dx = 0
+        self.dy = 0
 
         class_name = self.__class__.__name__.lower()        
 
@@ -48,25 +50,16 @@ class Targets(pygame.sprite.Sprite):
         
     def update(self):
         # Update animation frames
-        if pygame.time.get_ticks() - self.update_time > 100: # animation_cooldown
+        if pygame.time.get_ticks() - self.update_time > 100:
             self.update_time = pygame.time.get_ticks()
             self.frame_index += 1
             if self.frame_index >= len(self.animation_list[self.action]):
                 self.frame_index = 0
         self.image = self.animation_list[self.action][self.frame_index]
 
-        self.rect.x += random.choice([-1, 1]) * self.speed
-        self.rect.y += random.choice([-1, 1]) * self.speed
-
-        # Keep within the screen boundaries
-        if self.rect.left < 0:
-            self.rect.left = 0
-        if self.rect.right > SCREEN_WIDTH:
-            self.rect.right = SCREEN_WIDTH
-        if self.rect.top < 0:
-            self.rect.top = 0
-        if self.rect.bottom > SCREEN_HEIGHT:
-            self.rect.bottom = SCREEN_HEIGHT
+        if isinstance(self, Cows):
+            self.x += self.dx
+            self.y += self.dy
 
     def draw(self, screen):
         # Draw the target on the screen
@@ -75,10 +68,16 @@ class Targets(pygame.sprite.Sprite):
 class Cows(Targets):
     def __init__(self, x, y, scale, speed):
         super().__init__(x, y, scale, speed)
+        self.dx = 0
+        self.dy = 0
 
 class Basic_Cow(Cows):
     def __init__(self, x, y, scale, speed):
         super().__init__(x, y, scale, speed)
+        self.dx = random.randint(-2, 2)
+        self.dy = random.randint(-2, 2)
+        self.x = x
+        self.y = y
 
 class Best_Cow(Cows):
     def __init__(self, x, y, scale, speed):
@@ -87,10 +86,18 @@ class Best_Cow(Cows):
 class Cow_1(Basic_Cow):
     def __init__(self, x, y, scale, speed):
         super().__init__(x, y, scale, speed)
+        self.dx = random.randint(-2, 2)
+        self.dy = random.randint(-2, 2)
+        self.x = x
+        self.y = y
 
 class Cow_2(Basic_Cow):
     def __init__(self, x, y, scale, speed):
         super().__init__(x, y, scale, speed)
+        self.dx = random.randint(-2, 2)
+        self.dy = random.randint(-2, 2)
+        self.x = x
+        self.y = y
 
 class Cow_3(Best_Cow):
     def __init__(self, x, y, scale, speed):
@@ -109,7 +116,7 @@ class Chicken_2(Chickens):
         super().__init__(x, y, scale, speed)
 
 class Civilians(Targets):
-    def __init__(self, x, y, scale, speed):
+    def __init__(self, x, y, scale, speed=0):
         super().__init__(x, y, scale, speed)
 
 class Man_1(Civilians):
