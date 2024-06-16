@@ -2,7 +2,7 @@ from mouse import MouseControl
 import random
 import pygame
 import os
-from map import load_game_bg, draw_game_bg, update_bg_scroll, Building
+from map import load_game_bg, draw_game_bg, update_bg_scroll, Building, Building
 from leaderboard import Result, Game, Score
 from target import Targets, Cows, Chickens, Civilians, Cow_1, Cow_2, Cow_3, Chicken_1, Chicken_2, Man_1, Man_2, Woman_1, Woman_2
 from target_vehicles import Target_vehicles, Marquis_1_rear, Marquis_2_rear, Marquis_3_rear, Wagon_1_rear, Wagon_2_rear, Wagon_3_rear
@@ -543,6 +543,7 @@ def run_game():
     player = Player_idle(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, 2, 5)
     player = Player_idle(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, 2, 5)
     player_beam_down = Player_beam_down(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, 2, 5)
+    player = Player_idle(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, 2, 5)
 
     # Create buildings
     # Row 1, Block 1
@@ -619,11 +620,22 @@ def run_game():
     school = Building('school', 3972, 3202)
     wheat = Building('wheat', 521, 3966)
 
+
+
+
     while game_active:
         clock.tick(FPS)
 
         # Draw the game background
         draw_game_bg(screen, game_bg, bg_scroll)
+        draw_game_bg(screen, field, bg_scroll)
+
+        # Always draw beam first so it appears behind the player
+        player_beam_down.update(player.rect)
+        player_beam_down.draw()
+        
+        # Update mouse control
+        mouse_control.update(screen, player)
 
         # Draw buildings
         # Row 1, Block 1
@@ -699,13 +711,8 @@ def run_game():
         house_1c_7.draw(field)
         school.draw(field)
         wheat.draw(field)
-
-        # Always draw beam first so it appears behind the player
-        player_beam_down.update(player.rect)
-        player_beam_down.draw()
         
-        # Update mouse control with player object
-        mouse_control.update(screen, player)
+        
 
         player.update()
         player.draw()
