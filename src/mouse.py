@@ -8,7 +8,7 @@ screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 class Laser(pygame.sprite.Sprite):
     def __init__(self, x, y, target_x, target_y, speed, max_range, y_offset=0):
         super().__init__()
-        self.image = pygame.Surface((20, 5))
+        self.image = pygame.Surface((8, 8))
         self.image.fill('red')
         self.rect = self.image.get_rect(center=(x, y + y_offset))  # Apply the y_offset here
         self.start_pos = pygame.math.Vector2(x, y + y_offset)
@@ -32,8 +32,7 @@ class Laser(pygame.sprite.Sprite):
 
 class MouseControl:
     def __init__(self):
-        self.crosshair_image = pygame.Surface((20, 20), pygame.SRCALPHA)
-        pygame.draw.circle(self.crosshair_image, 'red', (10, 10), 10)  # Draw the circle on the surface
+        self.crosshair_image = pygame.image.load("assets/img/screen/crosshair/0.png")
         self.click_sound = pygame.mixer.Sound('assets/sounds/effects/lazer.mp3')
         pygame.mouse.set_visible(False)  # Hide default mouse cursor
         self.lasers = pygame.sprite.Group()
