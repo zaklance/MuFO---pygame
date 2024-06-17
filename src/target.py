@@ -9,7 +9,6 @@ from player import Character
 # Civilians: Man_1, Man_2, Woman_1, Woman_2
 
 class Targets(pygame.sprite.Sprite):
-
     def __init__(self, x, y, scale, speed=0):
         pygame.sprite.Sprite.__init__(self)
         self.alive = True
@@ -20,8 +19,6 @@ class Targets(pygame.sprite.Sprite):
         self.frame_index = 0
         self.action = 0
         self.update_time = pygame.time.get_ticks()
-        self.dx = 0
-        self.dy = 0
 
         class_name = self.__class__.__name__.lower()        
 
@@ -45,9 +42,11 @@ class Targets(pygame.sprite.Sprite):
             temp_list.append(img)
 
         self.animation_list.append(temp_list)
+
+        self.image_orig = self.animation_list[0][-1]
+        self.image = self.image_orig.copy()  
         
-        self.image = self.animation_list[self.action][self.frame_index]
-        self.rect = self.image.get_rect()
+        self.rect = self.image.get_rect(topleft=(x, y))
         self.rect.center = (x, y)
 
     def ai(self):
@@ -72,6 +71,12 @@ class Targets(pygame.sprite.Sprite):
     def draw(self, screen):
         # Draw the target on the screen
         screen.blit(self.image, self.rect)
+
+class Target_Object(pygame.sprite.Sprite):
+    def __init__(self, x, y, scale, speed):
+        super().__init__()
+        self.image = pygame.transform.scale(self.image_orig, (int(self.image_orig.get_width() * scale), int(self.image_orig.get_height() * scale)))
+        self.rect = self.image.get_rect(center=(x,y))
 
 class Cows(Targets):
     def __init__(self, x, y, scale, speed):
