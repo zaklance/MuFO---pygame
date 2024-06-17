@@ -703,14 +703,12 @@ def run_game():
         # Always draw beam first so it appears behind the player
         player_beam_down.update(player.rect, targets.copy(), target_vehicles, current_score)
         for target in targets:
+            target.ai()
             target.update()  # Update target state before collision check (optional)
+            target.draw(field)
 
         # Collision detection and removal
         collided_targets = pygame.sprite.spritecollide(player_beam_down, targets, True)
-
-        # Draw remaining targets and vehicles
-        for target in targets:
-            target.draw(field)
 
         for vehicle in target_vehicles:
             vehicle.draw(field)

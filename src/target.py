@@ -19,6 +19,8 @@ class Targets(pygame.sprite.Sprite):
         self.frame_index = 0
         self.action = 0
         self.update_time = pygame.time.get_ticks()
+        # ai specific variables
+        self.move_counter = 0
 
         class_name = self.__class__.__name__.lower()        
 
@@ -57,6 +59,28 @@ class Targets(pygame.sprite.Sprite):
                 ai_moving_right = False
             ai_moving_left = not ai_moving_right
             self.move(ai_moving_left, ai_moving_right)
+            self.move_counter += 1
+
+            if self.move_counter > 10:
+                self.direction *= -1
+                self.move_counter *= -1
+
+
+    def move(self, moving_left, moving_right):
+		#reset movement variables
+        dx = 0
+        dy = 0
+        if moving_left:
+            dx = -self.speed
+            self.flip = True
+            self.direction = -1
+        if moving_right:
+            dx = self.speed
+            self.flip = False
+            self.direction = 1
+
+        self.rect.x += dx
+        self.rect.y += dy
 
         
     def update(self):
