@@ -1,6 +1,7 @@
 import pygame
 import os
 import random
+from player import Character
 
 # Target Classes: 
 # Cows: Cow_1, Cow_2, Cow_3
@@ -11,6 +12,7 @@ class Targets(pygame.sprite.Sprite):
 
     def __init__(self, x, y, scale, speed=0):
         pygame.sprite.Sprite.__init__(self)
+        self.alive = True
         self.speed = speed
         self.direction = 1
         self.flip = False
@@ -47,6 +49,16 @@ class Targets(pygame.sprite.Sprite):
         self.image = self.animation_list[self.action][self.frame_index]
         self.rect = self.image.get_rect()
         self.rect.center = (x, y)
+
+    def ai(self):
+        if self.alive and Character.alive:
+            if self.direction == 1:
+                ai_moving_right = True
+            else:
+                ai_moving_right = False
+            ai_moving_left = not ai_moving_right
+            self.move(ai_moving_left, ai_moving_right)
+
         
     def update(self):
         # Update animation frames

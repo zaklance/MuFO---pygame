@@ -530,6 +530,10 @@ def title_screen():
         pygame.display.update()
         clock.tick(FPS)
 
+    block_list = House.all_block + Watertower.all_block + Circus.all_block + Grocery.all_block + Church.all_block + School.all_block
+
+    obstacle_sprites = pygame.sprite.Group()
+
 def run_game():
     global game_active, paused, moving_left, moving_right, moving_up, moving_down, screen_scroll, bg_scroll, current_score
     
@@ -538,6 +542,7 @@ def run_game():
     bg_width = game_bg.get_width()
     bg_height = game_bg.get_height()
     field = load_game_bg("assets/img/map/map-1.png")
+    # block_rect = 
 
     player_beam_down = Player_beam_down(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, 2, 5)
     player = Player_idle(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, 2, 5)
@@ -616,6 +621,7 @@ def run_game():
     house_1c_7 = House('house_1c', 3382, 3180, True)
     school = School('school', 3972, 3202)
     wheat = Building('wheat', 521, 3966)
+
 
     targets = initialize_targets()
 

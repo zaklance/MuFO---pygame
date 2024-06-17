@@ -10,6 +10,7 @@ screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 
 class Character(pygame.sprite.Sprite):
     def __init__(self, x, y, scale, speed):
+        self.alive = True
         self.load_images('idle', scale)
         self.flip = False
         self.image = self.animation_list[0]
