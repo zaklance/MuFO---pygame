@@ -4,8 +4,8 @@ import pygame
 import os
 from map import load_game_bg, draw_game_bg, update_bg_scroll, Building, Building
 from leaderboard import Result, Game, Score
-from target import Targets, Cows, Chickens, Civilians, Cow_1, Cow_2, Cow_3, Chicken_1, Chicken_2, Man_1, Man_2, Woman_1, Woman_2
-from target_vehicles import Target_vehicles, Marquis_1_rear, Marquis_2_rear, Marquis_3_rear, Wagon_1_rear, Wagon_2_rear, Wagon_3_rear
+from target import Cow_1, Cow_2, Cow_3, Chicken_1, Chicken_2, Man_1, Man_2, Woman_1, Woman_2
+from target_vehicles import Marquis_1_rear, Marquis_2_rear, Marquis_3_rear, Wagon_1_rear, Wagon_2_rear, Wagon_3_rear, Marquis_1, Marquis_2, Marquis_3, Wagon_1, Wagon_2, Wagon_3, Marquis_1_front, Marquis_2_front, Marquis_3_front, Wagon_1_front, Wagon_2_front, Wagon_3_front
 from enemy import Enemies
 
 # Load pygame
@@ -63,11 +63,14 @@ mouse_control = MouseControl()
 # Define global variable for Score
 current_score = Score(None, None)
 
-# Targets and Enemies Sprite groups 
+player_beam_down = pygame.Rect(100, 100, 20, 20)
+targets = pygame.Rect(150, 150, 30, 30)
+target_vehicles = pygame.Rect(150, 150, 30, 30)
+
+# Targets Sprite groups 
 def initialize_targets():
-    targets = pygame.sprite.Group()
-    target_vehicles = pygame.sprite.Group()
-    enemies = pygame.sprite.Group()
+    targets_group = pygame.sprite.Group()
+    target_vehicles_group = pygame.sprite.Group()
 
     # Define common variables
     civilians_scale = 1.25
@@ -90,7 +93,7 @@ def initialize_targets():
         x, y = position
         civilian_type = random.choice(civilian_types)
         civilian = civilian_type(x, y, civilians_scale, 5)
-        targets.add(civilian)
+        targets_group.add(civilian)
 
     chicken_positions = [
         (670, 2525), 
@@ -116,7 +119,7 @@ def initialize_targets():
         x, y = position
         chicken_type = random.choice([Chicken_1, Chicken_2])
         chicken = Chicken_1(x, y, chicken_scale, random.randint(*animation_speed_range))  # Random speed
-        targets.add(chicken)
+        targets_group.add(chicken)
 
     cow_positions = [
         (624, 2480), 
@@ -147,23 +150,74 @@ def initialize_targets():
         x, y = position
         cow_type = random.choice([Cow_1, Cow_2])
         cow = cow_type(x, y, cow_scale, random.randint(*animation_speed_range))  # Random speed
-        targets.add(cow)
+        targets_group.add(cow)
+
+    car_front_positions = {
+        (4220, 2750),
+        (4220, 2250),
+        (4220, 1950), 
+        (4220, 1550),
+        (4220, 1250)
+    }
+    car_front_types = [Marquis_1_front, Marquis_2_front, Marquis_3_front, Wagon_1_front, Wagon_2_front, Wagon_3_front]
+
+    for position in car_front_positions: 
+        x, y = position
+        car_front_type = random.choice(car_front_types)
+        car_front = car_front_type(x, y, car_scale, 5)
+        target_vehicles_group.add(car_front)
 
     car_rear_positions = [
         (2535, 4150),
         (2535, 3950),
         (2535, 3650),
+        (2535, 3250),
+        (2535, 2950),
+        (2535, 2550),
+        (2535, 2350),
         (2535, 1950),
-        (2535, 1750)
+        (2535, 1750),
+        (2535, 1550),
+        (2535, 1400),
+        (2535, 1150),
+        (2535, 900)
     ]
     car_rear_types = [Marquis_1_rear, Marquis_2_rear, Marquis_3_rear, Wagon_1_rear, Wagon_2_rear, Wagon_3_rear]
     
     for position in car_rear_positions:
         x, y = position
         car_rear_type = random.choice(car_rear_types)
-        car_rear = car_rear_type(x, y, civilians_scale, 5)
-        targets.add(car_rear)
-    return targets
+        car_rear = car_rear_type(x, y, car_scale, 5)
+        target_vehicles_group.add(car_rear)
+
+    car_positions = [
+        (200, 2175),
+        (449, 2175),
+        (849, 2175),
+        (1045, 2175),
+        (1265, 2175),
+        (1549, 2175),
+        (1849, 2175),
+        (2049, 2175),
+        (2349, 2175),
+        (2645, 2175),
+        (2965, 2175),
+        (3349, 2175),
+        (3645, 2175),
+        (3949, 2175),
+        (4245, 2175),
+        (4000, 2800),
+        (4000, 2600)
+    ]
+    car_types = [Marquis_1, Marquis_2, Marquis_3, Wagon_1, Wagon_2, Wagon_3]
+    
+    for position in car_positions:
+        x, y = position
+        car_type = random.choice(car_types)
+        car = car_type(x, y, car_scale, 5)
+        target_vehicles_group.add(car)
+
+    return targets_group, target_vehicles_group
 
 # Load background frames for title screen
 current_frame = 0
@@ -297,6 +351,7 @@ class Player_beam_down(Character):
         self.reverse = False
         self.spacebar_held = False
         self.opacity = 255
+        self.player_rect = pygame.Rect(self.rect.x, self.rect.y, self.rect.width, self.rect.height)
 
     def set_opacity(self, opacity):
         self.opacity = opacity
@@ -310,10 +365,12 @@ class Player_beam_down(Character):
     def end_beam(self):
         self.reverse = True
 
-    def update(self, player_rect):
+    def update(self, player_rect, targets, target_vehicles, current_score):
         if self.is_beam_active:
             self.rect.center = player_rect.center
             self.image = self.animation_list[self.frame_index]
+            self.player_rect.center = self.rect.center
+
             if pygame.time.get_ticks() - self.update_time > 100:
                 self.update_time = pygame.time.get_ticks()
                 if not self.reverse:
@@ -324,15 +381,23 @@ class Player_beam_down(Character):
                         self.frame_index -= 1
                     else:
                         self.is_beam_active = False
+        
+            # Check collision with targets
+            for target in targets.sprites():
+                if self.player_rect.colliderect(target.rect):
+                    targets.remove(target)
+                    target_type = type(target).__name__ 
+                    current_score.add_target(target_type)
+
+            for target_vehicle in target_vehicles.sprites():
+                if self.player_rect.colliderect(target_vehicle.rect):
+                    target_vehicles.remove(target_vehicle)
+                    target_type = type(target_vehicle).__name__
+                    current_score.add_target(target_type)
 
     def draw(self):
         if self.is_beam_active:
             screen.blit(pygame.transform.flip(self.image, self.flip, False), self.rect)
-
-# player_beam_down = Player_beam_down(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, 2, 5)
-# player = Player_idle(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, 2, 5)
-
-# player_beam_down.set_opacity(128)
 
 # Define the threshold area
 threshold_x = SCREEN_WIDTH // 3
@@ -531,7 +596,7 @@ def title_screen():
         clock.tick(FPS)
 
 def run_game():
-    global game_active, paused, moving_left, moving_right, moving_up, moving_down, screen_scroll, bg_scroll, current_score
+    global game_active, paused, moving_left, moving_right, moving_up, moving_down, screen_scroll, bg_scroll, current_score, targets
     
     # Load game background image for active play
     game_bg = load_game_bg("assets/img/map/map-0.png")
@@ -541,6 +606,8 @@ def run_game():
 
     player_beam_down = Player_beam_down(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, 2, 5)
     player = Player_idle(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, 2, 5)
+
+    player_beam_down.set_opacity(128)
 
     # Create buildings
     # Row 1, Block 1
@@ -617,7 +684,9 @@ def run_game():
     school = Building('school', 3972, 3202)
     wheat = Building('wheat', 521, 3966)
 
-    targets = initialize_targets()
+    targets, target_vehicles = initialize_targets()
+
+    current_score = Score(None, None)
 
     while game_active:
         clock.tick(FPS)
@@ -626,19 +695,29 @@ def run_game():
         draw_game_bg(screen, game_bg, bg_scroll)
         draw_game_bg(screen, field, bg_scroll)
 
-        for target in targets: 
-            target.update()
+        # Always draw beam first so it appears behind the player
+        player_beam_down.update(player.rect, targets.copy(), target_vehicles, current_score)
+        for target in targets:
+            target.update()  # Update target state before collision check (optional)
+
+        # Collision detection and removal
+        collided_targets = pygame.sprite.spritecollide(player_beam_down, targets, True)
+
+        # Draw remaining targets and vehicles
+        for target in targets:
             target.draw(field)
 
-        # Always draw beam first so it appears behind the player
-        player_beam_down.update(player.rect)
+        for vehicle in target_vehicles:
+            vehicle.draw(field)
+
+        # Draw everything (beam on top)
         player_beam_down.draw()
-        
+
         # Update mouse control
         mouse_control.update(screen, player)
 
         # Draw buildings
-        # Row 1, Block 1
+        # Row 1, Block 1 
         watertower.draw(field)
         house_4a_1.draw(field)
         house_2a_1.draw(field)
@@ -715,7 +794,6 @@ def run_game():
         player.update()
         player.draw()
         
-
         screen_scroll = player.move(moving_left, moving_right, moving_up, moving_down, threshold_x, threshold_y)
         bg_scroll = update_bg_scroll(bg_scroll, screen_scroll, bg_width, bg_height, SCREEN_WIDTH, SCREEN_HEIGHT)
 
@@ -723,7 +801,7 @@ def run_game():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 game_active = False
-                current_score.save_score()
+                # current_score.save_score()
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_a:
                     moving_left = True
