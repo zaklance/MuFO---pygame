@@ -78,10 +78,10 @@ class Targets(pygame.sprite.Sprite):
                     self.direction *= -1
                     self.move_counter *= -1
                 if rand_dir == 3:
-                    # self.direction_y *= -1
+                    self.direction_y *= -1
                     self.move_counter *= -1
                 if rand_dir == 4:
-                    # self.direction_y *= -1
+                    self.direction_y *= -1
                     self.move_counter *= -1
 
     def move(self, moving_left, moving_right, moving_up, moving_down):
@@ -89,19 +89,15 @@ class Targets(pygame.sprite.Sprite):
         dy = 0
         if moving_left:
             dx = -self.speed
-            # dy = 0
             self.flip = True
             self.direction = -1
         if moving_right:
             dx = self.speed
-            # dy = 0
             self.flip = False
             self.direction = 1
         if moving_up:
-            # dx = 0
             dy = -self.speed
         if moving_down:
-            # dx = 0
             dy = self.speed
         #update rectangle position
         self.rect.x += dx

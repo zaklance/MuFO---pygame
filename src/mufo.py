@@ -543,13 +543,17 @@ def title_screen():
     pygame.mixer.music.play(-1)
 
     buttons = [
-        Button('Start', SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 100, 200, 50, (100, 100, 100), (255, 255, 255), start_game),
+        Button('Start', SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 50, 200, 50, (100, 100, 100), (255, 255, 255), start_game),
         Button('Leaderboard', SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, 200, 50, (100, 100, 100), (255, 255, 255), show_leaderboard),
-        Button('Quit', SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 100, 200, 50, (100, 100, 100), (255, 255, 255), quit_game)
+        Button('Quit', SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 50, 200, 50, (100, 100, 100), (255, 255, 255), quit_game)
     ]
 
     selected_button = 0
     buttons[selected_button].selected = True
+
+    logo_image = pygame.image.load("assets/img/general/logo.png")
+    logo_image = pygame.transform.scale(logo_image, (int(logo_image.get_width() / 1.5), int(logo_image.get_height() / 1.5)))
+    logo_rect = logo_image.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 200))
 
     earth_image = pygame.image.load("assets/img/general/earth.png")
     earth_image = pygame.transform.scale(earth_image, (int(earth_image.get_width() * 6), int(earth_image.get_height() * 6)))
@@ -564,6 +568,8 @@ def title_screen():
         angle += .05
         if angle == 360:
             angle = 0
+
+        screen.blit(logo_image, logo_rect)
 
         # Rotate the earth image
         rotated_earth_image = pygame.transform.rotate(earth_image, angle)
