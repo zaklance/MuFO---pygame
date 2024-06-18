@@ -431,13 +431,20 @@ threshold_y = SCREEN_HEIGHT // 4
 # Initialize MouseControl
 mouse_control = MouseControl()
 
+def reset_game():
+    global game_active, paused, game_over
+    game_active = False
+    paused = False
+    game_over = False
+
 def draw_title_bg(background_frames):
     global current_frame
     screen.blit(background_frames[current_frame], (0, 0))
     current_frame = (current_frame + 1) % len(background_frames)
 
 def start_game():
-    global game_active, paused, current_screen
+    global game_active, paused, current_screen, reset_game
+    reset_game()
 
     # Create player instance and place in the middle of the screen
     player = Player_idle(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, 2, 5)  # Initial scale is 2
@@ -623,12 +630,12 @@ def gameover_screen():
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_UP:
                     buttons[selected_button].selected = False
-                    selected_button = (selected_button - 1) % len(buttons)
+                    selected_button = (selected_button + 1) % len(buttons)
                     buttons[selected_button].selected = True
                     navigation_sound.play()
                 if event.key == pygame.K_DOWN:
                     buttons[selected_button].selected = False
-                    selected_button = (selected_button + 1) % len(buttons)
+                    selected_button = (selected_button - 1) % len(buttons)
                     buttons[selected_button].selected = True
                     navigation_sound.play()
                 if event.key == pygame.K_SPACE:
@@ -639,6 +646,7 @@ def gameover_screen():
 
 def title_screen():
     global current_screen
+    reset_game()
     current_screen = "title"
     
     pygame.mixer.music.load("assets/sounds/music/title_screen.mp3")
@@ -655,7 +663,7 @@ def title_screen():
     buttons[selected_button].selected = True
 
     logo_image = pygame.image.load("assets/img/general/logo/logo_2.png")
-    logo_image = pygame.transform.scale(logo_image, (int(logo_image.get_width() / 1.5), int(logo_image.get_height() / 1.5)))
+    logo_image = pygame.transform.scale(logo_image, (int(logo_image.get_width() / 1.3), int(logo_image.get_height() / 1.3)))
     logo_rect = logo_image.get_rect(center=(SCREEN_WIDTH // 2.01, SCREEN_HEIGHT // 2 - 220))
 
     earth_image = pygame.image.load("assets/img/general/earth.png")
