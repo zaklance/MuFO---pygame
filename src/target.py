@@ -69,6 +69,9 @@ class Targets(pygame.sprite.Sprite):
             # ai_moving_down = not ai_moving_up
             self.move(ai_moving_left, ai_moving_right) # , ai_moving_up, ai_moving_down
             self.move_counter += 1
+            if self.move_counter > 10:
+                self.direction *= -1
+                self.move_counter *= -1
 
             if self.move_counter > rand_num:
                 if rand_dir == 1:
