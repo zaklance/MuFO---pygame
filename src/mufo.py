@@ -8,6 +8,7 @@ from target import Cow_1, Cow_2, Cow_3, Chicken_1, Chicken_2, Man_1, Man_2, Woma
 from target_vehicles import Marquis_1_rear, Marquis_2_rear, Marquis_3_rear, Wagon_1_rear, Wagon_2_rear, Wagon_3_rear, Marquis_1, Marquis_2, Marquis_3, Wagon_1, Wagon_2, Wagon_3, Marquis_1_front, Marquis_2_front, Marquis_3_front, Wagon_1_front, Wagon_2_front, Wagon_3_front
 from enemy import Enemies
 from player import Ufo, Beam, Cow
+from cutscenes import CutSceneOne, CutSceneManager
 
 # Load pygame
 pygame.init()
@@ -59,6 +60,8 @@ game_active = False
 paused = False
 game_over = 0
 
+# Initialize Cut Scene Manager
+cut_scene_manager = CutSceneManager(screen)
 # Initialize MouseControl
 mouse_control = MouseControl()
 
@@ -270,6 +273,7 @@ class Character(pygame.sprite.Sprite):
         self.frame_index = 0
         self.update_time = pygame.time.get_ticks()
         self.speed = speed
+        self.scale = scale  # Add this line to store the scale
         self.load_images('idle', scale)
         self.image = self.animation_list[self.frame_index]
         self.rect = self.image.get_rect()
@@ -292,6 +296,23 @@ class Character(pygame.sprite.Sprite):
             img = pygame.image.load(img_path)
             img = pygame.transform.scale(img, (int(img.get_width() * scale), int(img.get_height() * scale)))
             self.animation_list.append(img)
+
+    def update(self):
+        # Update animation
+        ANIMATION_COOLDOWN = 100
+        self.image = self.animation_list[self.frame_index]
+        if pygame.time.get_ticks() - self.update_time > ANIMATION_COOLDOWN:
+            self.update_time = pygame.time.get_ticks()
+            self.frame_index = (self.frame_index + 1) % len(self.animation_list)
+
+    def draw(self, screen):
+        screen.blit(pygame.transform.flip(self.image, self.flip, False), self.rect)
+
+    def reload_images(self, action, new_scale):
+        self.scale = new_scale
+        self.load_images(action, new_scale)
+        self.image = self.animation_list[0]
+        self.rect = self.image.get_rect(center=self.rect.center)
 
 class Player_idle(Character):
     def __init__(self, x, y, scale, speed):
@@ -417,12 +438,40 @@ def draw_title_bg(background_frames):
 
 def start_game():
     global game_active, paused, current_screen
+
+    # Create player instance and place in the middle of the screen
+    player = Player_idle(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, 2, 5)  # Initial scale is 2
+
+    # Double the player's scale using the reload_images method
+    player.reload_images('idle', 4)  # Scale is doubled from 2 to 4
+
+    # Start cutscene
+    cut_scene = CutSceneOne()
+    cut_scene_manager.start_cut_scene(cut_scene)
+
+    # Run cutscene
+    while cut_scene_manager.cut_scene_running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                exit()
+
+        draw_title_bg(background_frames)  # Draw the title screen background
+        player.update()  # Update player animation
+        player.draw()  # Draw player
+        cut_scene_manager.update()
+        cut_scene_manager.draw()
+        pygame.display.update()
+        clock.tick(FPS)
+
+    # Start the game after the cutscene
     game_active = True
     paused = False
     current_screen = "game"
     
     pygame.mixer.music.load("assets/sounds/music/in_game.mp3")
     pygame.mixer.music.play(-1)
+
 
 def show_leaderboard():
     global game_active
@@ -593,6 +642,7 @@ def title_screen():
     current_screen = "title"
     
     pygame.mixer.music.load("assets/sounds/music/title_screen.mp3")
+    pygame.mixer.music.set_volume(4.0)
     pygame.mixer.music.play(-1)
 
     buttons = [
@@ -879,7 +929,7 @@ def run_game():
                 # current_score.save_score()
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_a:
-                    moving_left = True
+                    moving_left = True 
                 if event.key == pygame.K_d:
                     moving_right = True
                 if event.key == pygame.K_w:
