@@ -7,6 +7,7 @@ from leaderboard import Result, Game, Score
 from target import Cow_1, Cow_2, Cow_3, Chicken_1, Chicken_2, Man_1, Man_2, Woman_1, Woman_2
 from target_vehicles import Marquis_1_rear, Marquis_2_rear, Marquis_3_rear, Wagon_1_rear, Wagon_2_rear, Wagon_3_rear, Marquis_1, Marquis_2, Marquis_3, Wagon_1, Wagon_2, Wagon_3, Marquis_1_front, Marquis_2_front, Marquis_3_front, Wagon_1_front, Wagon_2_front, Wagon_3_front
 from enemy import Enemies
+from player import Ufo, Beam, Cow
 
 # Load pygame
 pygame.init()
@@ -56,6 +57,7 @@ selected_sound = pygame.mixer.Sound(selected_sound_path)
 # Global game state
 game_active = False 
 paused = False
+game_over = 0
 
 # Initialize MouseControl
 mouse_control = MouseControl()
@@ -231,8 +233,10 @@ print(f"Loaded {len(background_frames)} frames.")
 
 # Load game font
 font_path = "assets/fonts/press-start-2p.ttf"
-font_size = 24
-custom_font = pygame.font.Font(font_path, font_size)
+small_font = pygame.font.Font(font_path, 24)
+medium_font = pygame.font.Font(font_path, 36)
+large_font = pygame.font.Font(font_path, 48)
+xl_font = pygame.font.Font(font_path, 72)
 
 # Create Button
 class Button():
@@ -448,7 +452,7 @@ def show_leaderboard():
 
         draw_title_bg(background_frames)  # Use the same background animation as the title screen
         
-        title = custom_font.render("LEADERBOARD", True, (255, 255, 0))
+        title = large_font.render("LEADERBOARD", True, (255, 255, 0))
         screen.blit(title, (SCREEN_WIDTH // 2 - title.get_width() // 2, 50))
 
         trophy_width, trophy_height = trophy_image.get_size()
@@ -456,12 +460,12 @@ def show_leaderboard():
         screen.blit(trophy_image, (SCREEN_WIDTH // 2 + title.get_width() // 2 + 10, 50))  # Right side
 
         # Determine maximum width needed for the name column
-        max_name_width = max(custom_font.size(username)[0] for username, game_title, score in leaderboard_data[:10])
-        score_width = max(custom_font.size(f'{score}')[0] for _, _, score in leaderboard_data[:10])
+        max_name_width = max(small_font.size(username)[0] for username, game_title, score in leaderboard_data[:10])
+        score_width = max(small_font.size(f'{score}')[0] for _, _, score in leaderboard_data[:10])
 
         # Display column headers with increased spacing
-        name_header = custom_font.render("Name", True, (255, 255, 255))
-        score_header = custom_font.render("Score", True, (255, 255, 255))
+        name_header = small_font.render("Name", True, (255, 255, 255))
+        score_header = small_font.render("Score", True, (255, 255, 255))
         header_x = SCREEN_WIDTH // 2 - (name_header.get_width() + score_header.get_width()) // 2
         screen.blit(name_header, (header_x, 150))
         screen.blit(score_header, (header_x + max_name_width + 150, 150))  # Adjusting spacing
@@ -471,16 +475,16 @@ def show_leaderboard():
 
         # Display placeholders for ranks in the first column
         for i in range(10):
-            rank_text = custom_font.render(f"{i + 1}", True, colors[i])
+            rank_text = small_font.render(f"{i + 1}", True, colors[i])
             screen.blit(rank_text, (rank_x, y_offset + i * 40))
 
         # Display actual leaderboard data with increased spacing
         for i, (username, game_title, score) in enumerate(leaderboard_data[:10]):
-            username_text = custom_font.render(f"{username}", True, colors[i])
+            username_text = small_font.render(f"{username}", True, colors[i])
             username_x = header_x + (max_name_width - username_text.get_width()) // 2
             screen.blit(username_text, (header_x, y_offset + i * 40))
 
-            score_text = custom_font.render(f"{score}", True, colors[i])
+            score_text = small_font.render(f"{score}", True, colors[i])
             screen.blit(score_text, (header_x + max_name_width + 150, y_offset + i * 40))  # Adjusting spacing
 
         pygame.display.update()
@@ -535,6 +539,55 @@ def resume_game():
     paused = False
     game_active = True
 
+def gameover_screen():
+    global game_active, current_screen, paused, game_over
+
+    buttons = [
+        Button('Back to Menu', SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 100, 200, 50, (100, 100, 100), (255, 255, 255), title_screen),
+        Button('Leaderboard', SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, 200, 50, (100, 100, 100), (255, 255, 255), show_leaderboard),
+        Button('Quit', SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 200, 200, 50, (100, 100, 100), (255, 255, 255), quit_game)
+    ]
+
+    selected_button = 0
+    buttons[selected_button].selected = True
+
+    while game_over:
+        draw_title_bg(background_frames)
+
+        title = large_font.render("GAME OVER", True, (255, 0, 0))
+        screen.blit(title, (SCREEN_WIDTH // 2 - title.get_width() // 2, 150))
+
+        #placeholder score
+        score = medium_font.render("YOUR SCORE:", True, (0, 255, 0))
+        screen.blit(score, (SCREEN_WIDTH // 2 - score.get_width() // 2, 250))
+
+        player_score = xl_font.render("5", True, (255, 0, 0))
+        screen.blit(player_score, (SCREEN_WIDTH // 2 - player_score.get_width() // 2, 320))
+
+        for button in buttons: 
+            button.draw(screen)
+        
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                exit()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_UP:
+                    buttons[selected_button].selected = False
+                    selected_button = (selected_button - 1) % len(buttons)
+                    buttons[selected_button].selected = True
+                    navigation_sound.play()
+                if event.key == pygame.K_DOWN:
+                    buttons[selected_button].selected = False
+                    selected_button = (selected_button + 1) % len(buttons)
+                    buttons[selected_button].selected = True
+                    navigation_sound.play()
+                if event.key == pygame.K_SPACE:
+                    buttons[selected_button].click()
+
+        pygame.display.update()
+        clock.tick(FPS)
+
 def title_screen():
     global current_screen
     current_screen = "title"
@@ -551,15 +604,20 @@ def title_screen():
     selected_button = 0
     buttons[selected_button].selected = True
 
-    logo_image = pygame.image.load("assets/img/general/logo.png")
+    logo_image = pygame.image.load("assets/img/general/logo/logo_2.png")
     logo_image = pygame.transform.scale(logo_image, (int(logo_image.get_width() / 1.5), int(logo_image.get_height() / 1.5)))
-    logo_rect = logo_image.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 200))
+    logo_rect = logo_image.get_rect(center=(SCREEN_WIDTH // 2.01, SCREEN_HEIGHT // 2 - 220))
 
     earth_image = pygame.image.load("assets/img/general/earth.png")
     earth_image = pygame.transform.scale(earth_image, (int(earth_image.get_width() * 6), int(earth_image.get_height() * 6)))
     earth_rect = earth_image.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 1060))
     
     angle = 0
+
+    title_logo_scale = 2.5
+    beam = Beam(800, 195, title_logo_scale, speed=5)
+    ufo = Ufo(800, 200, title_logo_scale, speed=5)
+    cow = Cow(800, 245, title_logo_scale, speed=5)
 
     while current_screen == "title":
         draw_title_bg(background_frames)
@@ -570,6 +628,14 @@ def title_screen():
             angle = 0
 
         screen.blit(logo_image, logo_rect)
+
+        beam.update()
+        cow.update()
+        ufo.update()
+
+        beam.draw(screen)
+        cow.draw(screen)
+        ufo.draw(screen)
 
         # Rotate the earth image
         rotated_earth_image = pygame.transform.rotate(earth_image, angle)
@@ -606,7 +672,7 @@ def title_screen():
     obstacle_sprites = pygame.sprite.Group()
 
 def run_game():
-    global game_active, paused, moving_left, moving_right, moving_up, moving_down, screen_scroll, bg_scroll, current_score, targets
+    global game_active, paused, game_over, moving_left, moving_right, moving_up, moving_down, screen_scroll, bg_scroll, current_score, targets
     
     # Load game background image for active play
     game_bg = load_game_bg("assets/img/map/map-0.png")
@@ -709,7 +775,7 @@ def run_game():
         # Always draw beam first so it appears behind the player
         player_beam_down.update(player.rect, targets.copy(), target_vehicles, current_score)
         for target in targets:
-            target.ai()
+            # target.ai()
             target.update()  # Update target state before collision check (optional)
             target.draw(field)
 
@@ -823,6 +889,9 @@ def run_game():
                 if event.key == pygame.K_ESCAPE:
                     paused = True
                     pause_screen()  
+                if event.key == pygame.K_p:
+                    game_over = True
+                    gameover_screen()
                 if event.key == pygame.K_SPACE:
                     player_beam_down.spacebar_held = True
                     if not player_beam_down.is_beam_active:
