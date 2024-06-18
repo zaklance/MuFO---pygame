@@ -623,12 +623,12 @@ def gameover_screen():
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_UP:
                     buttons[selected_button].selected = False
-                    selected_button = (selected_button - 1) % len(buttons)
+                    selected_button = (selected_button + 1) % len(buttons)
                     buttons[selected_button].selected = True
                     navigation_sound.play()
                 if event.key == pygame.K_DOWN:
                     buttons[selected_button].selected = False
-                    selected_button = (selected_button + 1) % len(buttons)
+                    selected_button = (selected_button - 1) % len(buttons)
                     buttons[selected_button].selected = True
                     navigation_sound.play()
                 if event.key == pygame.K_SPACE:
