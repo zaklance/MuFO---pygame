@@ -14,12 +14,13 @@ class Targets(pygame.sprite.Sprite):
         self.alive = True
         self.speed = speed
         self.direction = 1
+        self.direction_y = 1
         self.flip = False
         self.animation_list = []
         self.frame_index = 0
         self.action = 0
         self.update_time = pygame.time.get_ticks()
-        # ai specific variables
+        # ai variables
         self.move_counter = 0
 
         class_name = self.__class__.__name__.lower()        
@@ -53,32 +54,56 @@ class Targets(pygame.sprite.Sprite):
 
     def ai(self):
         if self.alive and Character.alive:
+            ai_moving_up = True
+            rand_num = random.randint(8, 25)
+            rand_dir = random.choice([1, 2, 3, 4])                
             if self.direction == 1:
                 ai_moving_right = True
             else:
                 ai_moving_right = False
+            if self.direction_y == 1:
+                ai_moving_up = True
+            elif self.direction_y == -1:
+                ai_moving_down = False
             ai_moving_left = not ai_moving_right
-            self.move(ai_moving_left, ai_moving_right)
+            ai_moving_down = not ai_moving_up
+            self.move(ai_moving_left, ai_moving_right, ai_moving_up, ai_moving_down)
             self.move_counter += 1
 
-            if self.move_counter > 10:
-                self.direction *= -1
-                self.move_counter *= -1
+            if self.move_counter > rand_num:
+                if rand_dir == 1:
+                    self.direction *= -1
+                    self.move_counter *= -1
+                if rand_dir == 2:
+                    self.direction *= -1
+                    self.move_counter *= -1
+                if rand_dir == 3:
+                    # self.direction_y *= -1
+                    self.move_counter *= -1
+                if rand_dir == 4:
+                    # self.direction_y *= -1
+                    self.move_counter *= -1
 
-
-    def move(self, moving_left, moving_right):
-		#reset movement variables
+    def move(self, moving_left, moving_right, moving_up, moving_down):
         dx = 0
         dy = 0
         if moving_left:
             dx = -self.speed
+            # dy = 0
             self.flip = True
             self.direction = -1
         if moving_right:
             dx = self.speed
+            # dy = 0
             self.flip = False
             self.direction = 1
-
+        if moving_up:
+            # dx = 0
+            dy = -self.speed
+        if moving_down:
+            # dx = 0
+            dy = self.speed
+        #update rectangle position
         self.rect.x += dx
         self.rect.y += dy
 

@@ -6,6 +6,7 @@ class Target_vehicles(pygame.sprite.Sprite):
 
     def __init__(self, x, y, scale, speed=0):
         pygame.sprite.Sprite.__init__(self)
+        self.sprite_type = 'target_vehicles'
         self.speed = speed
         self.direction = 1
         self.flip = False
