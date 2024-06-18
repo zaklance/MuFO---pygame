@@ -1,5 +1,6 @@
 import pygame
 import os
+from player import Character
 
 class Target_vehicles(pygame.sprite.Sprite):
 
@@ -39,6 +40,31 @@ class Target_vehicles(pygame.sprite.Sprite):
         self.image = self.animation_list[self.action][self.frame_index]
         self.rect = self.image.get_rect()
         self.rect.center = (x, y)
+
+    def ai(self):
+        if self.alive and Character.alive:
+            if self.direction == 1:
+                ai_moving_right = True
+            else:
+                ai_moving_right = False
+            ai_moving_left = not ai_moving_right
+            self.move(ai_moving_left, ai_moving_right)
+
+    def move(self, moving_left, moving_right):
+		#reset movement variables
+        dx = 0
+        dy = 0
+        if moving_left:
+            dx = -self.speed
+            self.flip = True
+            self.direction = -1
+        if moving_right:
+            dx = self.speed
+            self.flip = False
+            self.direction = 1
+            
+        self.rect.x += dx
+        self.rect.y += dy
         
     def update(self):
         # Update animation frames

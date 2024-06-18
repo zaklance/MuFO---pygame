@@ -543,13 +543,17 @@ def title_screen():
     pygame.mixer.music.play(-1)
 
     buttons = [
-        Button('Start', SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 100, 200, 50, (100, 100, 100), (255, 255, 255), start_game),
+        Button('Start', SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 50, 200, 50, (100, 100, 100), (255, 255, 255), start_game),
         Button('Leaderboard', SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, 200, 50, (100, 100, 100), (255, 255, 255), show_leaderboard),
-        Button('Quit', SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 100, 200, 50, (100, 100, 100), (255, 255, 255), quit_game)
+        Button('Quit', SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 50, 200, 50, (100, 100, 100), (255, 255, 255), quit_game)
     ]
 
     selected_button = 0
     buttons[selected_button].selected = True
+
+    logo_image = pygame.image.load("assets/img/general/logo.png")
+    logo_image = pygame.transform.scale(logo_image, (int(logo_image.get_width() / 1.5), int(logo_image.get_height() / 1.5)))
+    logo_rect = logo_image.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 200))
 
     earth_image = pygame.image.load("assets/img/general/earth.png")
     earth_image = pygame.transform.scale(earth_image, (int(earth_image.get_width() * 6), int(earth_image.get_height() * 6)))
@@ -564,6 +568,8 @@ def title_screen():
         angle += .05
         if angle == 360:
             angle = 0
+
+        screen.blit(logo_image, logo_rect)
 
         # Rotate the earth image
         rotated_earth_image = pygame.transform.rotate(earth_image, angle)
@@ -595,6 +601,10 @@ def title_screen():
         pygame.display.update()
         clock.tick(FPS)
 
+    block_list = House.all_block + Watertower.all_block + Circus.all_block + Grocery.all_block + Church.all_block + School.all_block
+
+    obstacle_sprites = pygame.sprite.Group()
+
 def run_game():
     global game_active, paused, moving_left, moving_right, moving_up, moving_down, screen_scroll, bg_scroll, current_score, targets
     
@@ -603,6 +613,7 @@ def run_game():
     bg_width = game_bg.get_width()
     bg_height = game_bg.get_height()
     field = load_game_bg("assets/img/map/map-1.png")
+    # block_rect = 
 
     player_beam_down = Player_beam_down(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, 2, 5)
     player = Player_idle(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, 2, 5)
@@ -698,14 +709,12 @@ def run_game():
         # Always draw beam first so it appears behind the player
         player_beam_down.update(player.rect, targets.copy(), target_vehicles, current_score)
         for target in targets:
+            target.ai()
             target.update()  # Update target state before collision check (optional)
+            target.draw(field)
 
         # Collision detection and removal
         collided_targets = pygame.sprite.spritecollide(player_beam_down, targets, True)
-
-        # Draw remaining targets and vehicles
-        for target in targets:
-            target.draw(field)
 
         for vehicle in target_vehicles:
             vehicle.draw(field)
