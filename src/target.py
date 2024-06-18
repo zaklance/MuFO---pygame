@@ -14,7 +14,7 @@ class Targets(pygame.sprite.Sprite):
         self.alive = True
         self.speed = speed
         self.direction = 1
-        self.direction_y = 1
+        # self.direction_y = 1
         self.flip = False
         self.animation_list = []
         self.frame_index = 0
@@ -54,37 +54,37 @@ class Targets(pygame.sprite.Sprite):
 
     def ai(self):
         if self.alive and Character.alive:
-            ai_moving_up = True
+            # ai_moving_up = True
             rand_num = random.randint(8, 25)
             rand_dir = random.choice([1, 2, 3, 4])                
             if self.direction == 1:
                 ai_moving_right = True
             else:
                 ai_moving_right = False
-            if self.direction_y == 1:
-                ai_moving_up = True
-            elif self.direction_y == -1:
-                ai_moving_down = False
+            # if self.direction_y == 1:
+            #     ai_moving_up = True
+            # elif self.direction_y == -1:
+            #     ai_moving_down = False
             ai_moving_left = not ai_moving_right
-            ai_moving_down = not ai_moving_up
-            self.move(ai_moving_left, ai_moving_right, ai_moving_up, ai_moving_down)
+            # ai_moving_down = not ai_moving_up
+            self.move(ai_moving_left, ai_moving_right) # , ai_moving_up, ai_moving_down
             self.move_counter += 1
 
             if self.move_counter > rand_num:
                 if rand_dir == 1:
                     self.direction *= -1
                     self.move_counter *= -1
-                if rand_dir == 2:
+                if rand_dir == 2: # 2 when with up down direction
                     self.direction *= -1
                     self.move_counter *= -1
-                if rand_dir == 3:
-                    self.direction_y *= -1
-                    self.move_counter *= -1
-                if rand_dir == 4:
-                    self.direction_y *= -1
-                    self.move_counter *= -1
+                # if rand_dir == 3:
+                #     self.direction_y *= -1
+                #     self.move_counter *= -1
+                # if rand_dir == 4:
+                #     self.direction_y *= -1
+                #     self.move_counter *= -1
 
-    def move(self, moving_left, moving_right, moving_up, moving_down):
+    def move(self, moving_left, moving_right): # , moving_up, moving_down
         dx = 0
         dy = 0
         if moving_left:
@@ -95,10 +95,10 @@ class Targets(pygame.sprite.Sprite):
             dx = self.speed
             self.flip = False
             self.direction = 1
-        if moving_up:
-            dy = -self.speed
-        if moving_down:
-            dy = self.speed
+        # if moving_up:
+        #     dy = -self.speed
+        # if moving_down:
+            # dy = self.speed
         #update rectangle position
         self.rect.x += dx
         self.rect.y += dy
