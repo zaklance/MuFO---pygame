@@ -55,6 +55,34 @@ selected_sound_path = os.path.join(assets_dir, "selected.mp3")
 navigation_sound = pygame.mixer.Sound(navigation_sound_path)
 selected_sound = pygame.mixer.Sound(selected_sound_path)
 
+initial_player_position = (800, 450)
+
+def initialize_game():
+    global player_position, current_screen, game_active, paused, game_over, current_score, moving_left, moving_right, moving_up, moving_down
+
+    SCREEN_WIDTH = 1600
+    SCREEN_HEIGHT = 900
+    screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+
+    current_screen = "title"
+
+    player_position = initial_player_position
+    player = Player_idle(player_position[0], player_position[1], 2, 5)
+
+    player = Player_idle(player_position[0], player_position[1], 2, 5)
+    player.reload_images('idle', 4)
+
+    game_active = False
+    game_over = False
+    paused = False
+    current_score = 0
+    moving_left = False
+    moving_right = False
+    moving_up = False
+    moving_down = False
+
+    player.rect.topleft = player_position
+
 # Global game state
 game_active = False 
 paused = False
@@ -300,10 +328,10 @@ class Character(pygame.sprite.Sprite):
     def update(self):
         # Update animation
         ANIMATION_COOLDOWN = 100
-        self.image = self.animation_list[self.frame_index]
         if pygame.time.get_ticks() - self.update_time > ANIMATION_COOLDOWN:
             self.update_time = pygame.time.get_ticks()
             self.frame_index = (self.frame_index + 1) % len(self.animation_list)
+            self.image = self.animation_list[self.frame_index]
 
     def draw(self, screen):
         screen.blit(pygame.transform.flip(self.image, self.flip, False), self.rect)
@@ -330,6 +358,7 @@ class Player_idle(Character):
         screen_scroll = [0, 0]
         dx = 0
         dy = 0
+        
 
         if moving_left:
             dx = -self.speed
@@ -346,6 +375,9 @@ class Player_idle(Character):
 
         self.rect.x += dx
         self.rect.y += dy
+
+        # self.player_position[0] = self.rect.x
+        # self.player_position[1] = self.rect.y
 
         # Check horizontal threshold
         if self.rect.right > SCREEN_WIDTH - threshold_x:
@@ -431,24 +463,23 @@ threshold_y = SCREEN_HEIGHT // 4
 # Initialize MouseControl
 mouse_control = MouseControl()
 
-def reset_game():
-    global game_active, paused, game_over
-    game_active = False
-    paused = False
-    game_over = False
-
 def draw_title_bg(background_frames):
     global current_frame
     screen.blit(background_frames[current_frame], (0, 0))
     current_frame = (current_frame + 1) % len(background_frames)
 
 def start_game():
-    global game_active, paused, current_screen, reset_game
-    reset_game()
+    global game_active, paused, current_screen, player_position
 
+    # Start the game after the cutscene
+    game_active = True
+    paused = False
+    current_screen = "game"
+    
     # Create player instance and place in the middle of the screen
-    player = Player_idle(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, 2, 5)  # Initial scale is 2
-
+    player_position = initial_player_position
+    player = Player_idle(player_position[0], player_position[1], 2, 5)
+    
     # Double the player's scale using the reload_images method
     player.reload_images('idle', 4)  # Scale is doubled from 2 to 4
 
@@ -471,14 +502,8 @@ def start_game():
         pygame.display.update()
         clock.tick(FPS)
 
-    # Start the game after the cutscene
-    game_active = True
-    paused = False
-    current_screen = "game"
-    
     pygame.mixer.music.load("assets/sounds/music/in_game.mp3")
     pygame.mixer.music.play(-1)
-
 
 def show_leaderboard():
     global game_active
@@ -646,7 +671,7 @@ def gameover_screen():
 
 def title_screen():
     global current_screen
-    reset_game()
+    initialize_game()
     current_screen = "title"
     
     pygame.mixer.music.load("assets/sounds/music/title_screen.mp3")
@@ -705,7 +730,7 @@ def title_screen():
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                pygame.quit()
+                pygame.quit() 
                 exit()
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_UP:
@@ -731,7 +756,7 @@ def title_screen():
 
 def run_game():
     global game_active, paused, game_over, moving_left, moving_right, moving_up, moving_down, screen_scroll, bg_scroll, current_score, targets
-    
+
     # Load game background image for active play
     game_bg = load_game_bg("assets/img/map/map-0.png")
     bg_width = game_bg.get_width()
@@ -821,7 +846,7 @@ def run_game():
 
     targets, target_vehicles = initialize_targets()
 
-    current_score = Score(None, None)
+    # current_score = Score(None, None)
 
     while game_active:
         clock.tick(FPS)
@@ -841,6 +866,7 @@ def run_game():
         collided_targets = pygame.sprite.spritecollide(player_beam_down, targets, True)
 
         for vehicle in target_vehicles:
+            vehicle.update()
             vehicle.draw(field)
 
         # Draw everything (beam on top)
@@ -934,7 +960,7 @@ def run_game():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 game_active = False
-                # current_score.save_score()
+                # current_score.save_score() 
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_a:
                     moving_left = True 
@@ -972,7 +998,7 @@ def run_game():
 
         pygame.display.update()
 
-    current_score.save_score()
+    # current_score.save_score()
     pygame.quit()
     exit()
 
@@ -986,4 +1012,5 @@ def main():
             run_game()
         elif current_screen == "leaderboard":
             show_leaderboard() 
+
 main()
