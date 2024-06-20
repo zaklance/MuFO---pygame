@@ -832,7 +832,7 @@ def run_game():
         for target in targets:
             # target.ai()
             target.update()  # Update target state before collision check (optional)
-            target.draw(field)
+            target.draw(screen)
 
         # Collision detection and removal
         collided_targets = pygame.sprite.spritecollide(player_beam_down, targets, True)
