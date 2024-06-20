@@ -9,6 +9,7 @@ from target_vehicles import Marquis_1_rear, Marquis_2_rear, Marquis_3_rear, Wago
 from enemy import Enemies
 from player import Ufo, Beam, Cow
 from cutscenes import CutSceneOne, CutSceneManager
+from settings import scroll_thresh, SCREEN_WIDTH, SCREEN_HEIGHT, screen, scroll_thresh, screen_scroll, bg_scroll
 
 # Load pygame
 pygame.init()
@@ -19,10 +20,6 @@ pygame.mixer.init()
 # Load database initializer
 Game.initialize_database()
 
-# Set resolution
-SCREEN_WIDTH = 1600
-SCREEN_HEIGHT = 900
-screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 
 # Set Window Name
 pygame.display.set_caption('Mû.F.O')
@@ -841,6 +838,7 @@ def run_game():
         collided_targets = pygame.sprite.spritecollide(player_beam_down, targets, True)
 
         for vehicle in target_vehicles:
+            vehicle.update()
             vehicle.draw(field)
 
         # Draw everything (beam on top)

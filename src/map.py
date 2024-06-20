@@ -1,5 +1,5 @@
 import pygame
-
+from settings import scroll_thresh, SCREEN_WIDTH, SCREEN_HEIGHT, screen, scroll_thresh, screen_scroll, bg_scroll
 
 def load_game_bg(image_path):
     return pygame.image.load(image_path)
