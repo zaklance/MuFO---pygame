@@ -90,6 +90,7 @@ game_over = 0
 
 # Initialize Cut Scene Manager
 cut_scene_manager = CutSceneManager(screen)
+
 # Initialize MouseControl
 mouse_control = MouseControl()
 
