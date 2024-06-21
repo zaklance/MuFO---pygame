@@ -1,7 +1,8 @@
-from mouse import MouseControl
 import random
 import pygame
 import os
+from pygame.math import Vector2
+from mouse import MouseControl
 from map import load_game_bg, draw_game_bg, update_bg_scroll, Building, House, Watertower, Circus, Grocery, Church, School
 from leaderboard import Result, Game, Score
 from target import Cow_1, Cow_2, Cow_3, Chicken_1, Chicken_2, Man_1, Man_2, Woman_1, Woman_2
@@ -39,8 +40,8 @@ moving_down = False
 
 # Define scrolling variables
 scroll_thresh = SCREEN_WIDTH // 2
-screen_scroll = [0, 0]
-bg_scroll = [0, 0]
+screen_scroll = Vector2(0, 0)
+bg_scroll = Vector2(0, 0)
 
 # Load sound effects
 script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -324,7 +325,7 @@ class Player_idle(Character):
             self.frame_index = (self.frame_index + 1) % len(self.animation_list)
     
     def move(self, moving_left, moving_right, moving_up, moving_down, threshold_x, threshold_y):
-        screen_scroll = [0, 0]
+        screen_scroll = Vector2(0, 0)
         dx = 0
         dy = 0
 
@@ -347,18 +348,18 @@ class Player_idle(Character):
         # Check horizontal threshold
         if self.rect.right > SCREEN_WIDTH - threshold_x:
             self.rect.right = SCREEN_WIDTH - threshold_x
-            screen_scroll[0] = dx
+            screen_scroll.x = dx
         elif self.rect.left < threshold_x:
             self.rect.left = threshold_x
-            screen_scroll[0] = dx
+            screen_scroll.x = dx
 
         # Check vertical threshold
         if self.rect.bottom > SCREEN_HEIGHT - threshold_y:
             self.rect.bottom = SCREEN_HEIGHT - threshold_y
-            screen_scroll[1] = dy
+            screen_scroll.y = dy
         elif self.rect.top < threshold_y:
             self.rect.top = threshold_y
-            screen_scroll[1] = dy
+            screen_scroll.y = dy
 
         return screen_scroll
 
@@ -830,7 +831,7 @@ def run_game():
         # Always draw beam first so it appears behind the player
         player_beam_down.update(player.rect, targets.copy(), target_vehicles, current_score)
         for target in targets:
-            # target.ai()
+            target.ai()
             target.update()  # Update target state before collision check (optional)
             target.draw(field)
 
