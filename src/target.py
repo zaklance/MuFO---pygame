@@ -108,7 +108,7 @@ class Targets(pygame.sprite.Sprite):
 
     def draw(self, screen):
         # Draw the target on the screen
-        screen.blit(self.image, self.rect)
+        screen.blit(pygame.transform.flip(self.image, self.flip, False), self.rect)
 
 class Target_Object(pygame.sprite.Sprite):
     def __init__(self, x, y, scale, speed):

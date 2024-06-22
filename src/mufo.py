@@ -812,6 +812,8 @@ def run_game():
     school = School('school', 3972, 3202)
     wheat = Building('wheat', 521, 3966)
 
+    cow_3_1 = Cow_3(400, 400, 2, 2)
+
     targets, target_vehicles = initialize_targets()
 
     current_score = Score(None, None)
@@ -829,6 +831,10 @@ def run_game():
             target.ai()
             target.update()  # Update target state before collision check (optional)
             target.draw(field)
+
+        cow_3_1.ai()
+        cow_3_1.update()
+        cow_3_1.draw(screen)
 
         # Collision detection and removal
         collided_targets = pygame.sprite.spritecollide(player_beam_down, targets, True)
