@@ -10,7 +10,7 @@ from target_vehicles import Marquis_1_rear, Marquis_2_rear, Marquis_3_rear, Wago
 from enemy import Enemies
 from player import Ufo, Beam, Cow
 from cutscenes import CutSceneOne, CutSceneManager
-from settings import scroll_thresh, SCREEN_WIDTH, SCREEN_HEIGHT, screen, scroll_thresh, screen_scroll, bg_scroll
+from settings import SCROLL_THRESH, SCREEN_WIDTH, SCREEN_HEIGHT, screen, screen_scroll, bg_scroll
 
 # Load pygame
 pygame.init()
@@ -37,11 +37,6 @@ moving_left = False
 moving_right = False
 moving_up = False
 moving_down = False
-
-# Define scrolling variables
-scroll_thresh = SCREEN_WIDTH // 2
-screen_scroll = Vector2(0, 0)
-bg_scroll = Vector2(0, 0)
 
 # Load sound effects
 script_dir = os.path.dirname(os.path.abspath(__file__))
