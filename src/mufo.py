@@ -9,17 +9,14 @@ from target_vehicles import Marquis_1_rear, Marquis_2_rear, Marquis_3_rear, Wago
 from enemy import Enemies
 from player import Ufo, Beam, Cow
 from cutscenes import CutSceneOne, CutSceneManager
-from settings import scroll_thresh, SCREEN_WIDTH, SCREEN_HEIGHT, screen, scroll_thresh, screen_scroll, bg_scroll
+from settings import SCREEN_WIDTH, SCREEN_HEIGHT, screen, scroll_thresh, screen_scroll, bg_scroll
 
-# Load pygame
+# Load pygame and mixer for music
 pygame.init()
-
-# Load mixer mode for music
 pygame.mixer.init()
 
 # Load database initializer
 Game.initialize_database()
-
 
 # Set Window Name
 pygame.display.set_caption('Mû.F.O')
@@ -36,11 +33,6 @@ moving_left = False
 moving_right = False
 moving_up = False
 moving_down = False
-
-# Define scrolling variables
-scroll_thresh = SCREEN_WIDTH // 2
-screen_scroll = [0, 0]
-bg_scroll = [0, 0]
 
 # Load sound effects
 script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -59,6 +51,7 @@ game_over = 0
 
 # Initialize Cut Scene Manager
 cut_scene_manager = CutSceneManager(screen)
+
 # Initialize MouseControl
 mouse_control = MouseControl()
 
