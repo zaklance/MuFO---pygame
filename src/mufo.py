@@ -1,7 +1,8 @@
-from mouse import MouseControl
 import random
 import pygame
 import os
+from pygame.math import Vector2
+from mouse import MouseControl
 from map import load_game_bg, draw_game_bg, update_bg_scroll, Building, House, Watertower, Circus, Grocery, Church, School
 from leaderboard import Result, Game, Score
 from target import Cow_1, Cow_2, Cow_3, Chicken_1, Chicken_2, Man_1, Man_2, Woman_1, Woman_2
@@ -9,7 +10,7 @@ from target_vehicles import Marquis_1_rear, Marquis_2_rear, Marquis_3_rear, Wago
 from enemy import Enemies
 from player import Ufo, Beam, Cow
 from cutscenes import CutSceneOne, CutSceneManager
-from settings import SCREEN_WIDTH, SCREEN_HEIGHT, screen, scroll_thresh, screen_scroll, bg_scroll
+from settings import SCROLL_THRESH, SCREEN_WIDTH, SCREEN_HEIGHT, screen, screen_scroll, bg_scroll
 
 # Load pygame and mixer for music
 pygame.init()
@@ -317,7 +318,7 @@ class Player_idle(Character):
             self.frame_index = (self.frame_index + 1) % len(self.animation_list)
     
     def move(self, moving_left, moving_right, moving_up, moving_down, threshold_x, threshold_y):
-        screen_scroll = [0, 0]
+        screen_scroll = Vector2(0, 0)
         dx = 0
         dy = 0
 
@@ -340,18 +341,18 @@ class Player_idle(Character):
         # Check horizontal threshold
         if self.rect.right > SCREEN_WIDTH - threshold_x:
             self.rect.right = SCREEN_WIDTH - threshold_x
-            screen_scroll[0] = dx
+            screen_scroll.x = dx
         elif self.rect.left < threshold_x:
             self.rect.left = threshold_x
-            screen_scroll[0] = dx
+            screen_scroll.x = dx
 
         # Check vertical threshold
         if self.rect.bottom > SCREEN_HEIGHT - threshold_y:
             self.rect.bottom = SCREEN_HEIGHT - threshold_y
-            screen_scroll[1] = dy
+            screen_scroll.y = dy
         elif self.rect.top < threshold_y:
             self.rect.top = threshold_y
-            screen_scroll[1] = dy
+            screen_scroll.y = dy
 
         return screen_scroll
 
@@ -809,6 +810,8 @@ def run_game():
     school = School('school', 3972, 3202)
     wheat = Building('wheat', 521, 3966)
 
+    cow_3_1 = Cow_3(400, 400, 2, 2)
+
     targets, target_vehicles = initialize_targets()
 
     current_score = Score(None, None)
@@ -823,9 +826,13 @@ def run_game():
         # Always draw beam first so it appears behind the player
         player_beam_down.update(player.rect, targets.copy(), target_vehicles, current_score)
         for target in targets:
-            # target.ai()
+            target.ai()
             target.update()  # Update target state before collision check (optional)
             target.draw(field)
+
+        cow_3_1.ai()
+        cow_3_1.update()
+        cow_3_1.draw(screen)
 
         # Collision detection and removal
         collided_targets = pygame.sprite.spritecollide(player_beam_down, targets, True)

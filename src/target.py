@@ -61,13 +61,8 @@ class Targets(pygame.sprite.Sprite):
                 ai_moving_right = True
             else:
                 ai_moving_right = False
-            # if self.direction_y == 1:
-            #     ai_moving_up = True
-            # elif self.direction_y == -1:
-            #     ai_moving_down = False
             ai_moving_left = not ai_moving_right
-            # ai_moving_down = not ai_moving_up
-            self.move(ai_moving_left, ai_moving_right) # , ai_moving_up, ai_moving_down
+            self.move(ai_moving_left, ai_moving_right)
             self.move_counter += 1
             if self.move_counter > 10:
                 self.direction *= -1
@@ -80,12 +75,6 @@ class Targets(pygame.sprite.Sprite):
                 if rand_dir == 2: # 2 when with up down direction
                     self.direction *= -1
                     self.move_counter *= -1
-                # if rand_dir == 3:
-                #     self.direction_y *= -1
-                #     self.move_counter *= -1
-                # if rand_dir == 4:
-                #     self.direction_y *= -1
-                #     self.move_counter *= -1
 
     def move(self, moving_left, moving_right): # , moving_up, moving_down
         dx = 0
@@ -102,6 +91,7 @@ class Targets(pygame.sprite.Sprite):
         #     dy = -self.speed
         # if moving_down:
             # dy = self.speed
+            
         #update rectangle position
         self.rect.x += dx
         self.rect.y += dy
@@ -118,7 +108,7 @@ class Targets(pygame.sprite.Sprite):
 
     def draw(self, screen):
         # Draw the target on the screen
-        screen.blit(self.image, self.rect)
+        screen.blit(pygame.transform.flip(self.image, self.flip, False), self.rect)
 
 class Target_Object(pygame.sprite.Sprite):
     def __init__(self, x, y, scale, speed):

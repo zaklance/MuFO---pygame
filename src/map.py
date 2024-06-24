@@ -1,11 +1,29 @@
 import pygame
-from settings import scroll_thresh, SCREEN_WIDTH, SCREEN_HEIGHT, screen, scroll_thresh, screen_scroll, bg_scroll
+from pygame.math import Vector2
+from settings import SCROLL_THRESH, SCREEN_WIDTH, SCREEN_HEIGHT, screen, screen_scroll, bg_scroll
 
 def load_game_bg(image_path):
     return pygame.image.load(image_path)
 
 def draw_game_bg(screen, game_bg, bg_scroll):
     screen.blit(game_bg, (bg_scroll[0], bg_scroll[1]))
+    
+def update_bg_scroll(bg_scroll, screen_scroll, bg_width, bg_height, screen_width, screen_height):
+    if bg_scroll is None:
+        bg_scroll = Vector2(0 ,0)  # Initialize bg_scroll if it's None
+
+    if screen_scroll is not None:  # Ensure screen_scroll is not None
+        bg_scroll -= screen_scroll
+        
+    max_scroll_x = 0
+    min_scroll_x = -(bg_width - screen_width)
+    max_scroll_y = 0
+    min_scroll_y = -(bg_height - screen_height)
+    
+    bg_scroll.x = max(min_scroll_x, min(max_scroll_x, bg_scroll.x))
+    bg_scroll.y = max(min_scroll_y, min(max_scroll_y, bg_scroll.y))
+
+    return bg_scroll
 
 class Building(pygame.sprite.Sprite):
     def __init__(self, building, x, y, flip = False):
@@ -14,7 +32,6 @@ class Building(pygame.sprite.Sprite):
             self.image = pygame.transform.flip(self.image, True, False)
         self.rect = self.image.get_rect()
         self.rect.bottomleft = (x, y)
-        
     def draw(self, screen):
         screen.blit(self.image, self.rect)
 
@@ -61,15 +78,3 @@ class School(Building):
         School.all_block.append(self.block)
 
 
-def update_bg_scroll(bg_scroll, screen_scroll, bg_width, bg_height, screen_width, screen_height):
-    if bg_scroll is None:
-        bg_scroll = [0, 0]  # Initialize bg_scroll if it's None
-
-    if screen_scroll is not None:  # Ensure screen_scroll is not None
-        bg_scroll[0] -= screen_scroll[0]
-        bg_scroll[1] -= screen_scroll[1]
-
-    bg_scroll[0] = max(-(bg_width - screen_width), min(0, bg_scroll[0]))
-    bg_scroll[1] = max(-(bg_height - screen_height), min(0, bg_scroll[1]))
-
-    return bg_scroll

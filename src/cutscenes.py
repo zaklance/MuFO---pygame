@@ -262,6 +262,11 @@ class CutSceneOne:
             cow_rect = cow_image.get_rect(center=(SCREEN_WIDTH // 2 + 400, SCREEN_HEIGHT // 2))
             screen.blit(cow_image, cow_rect)
 
+        for event in pg.event.get():
+            if event.type == pg.KEYDOWN:
+                if event.key == pg.K_l:
+                    CutSceneManager.end_cut_scene(self)
+
 class CutSceneManager:
 
     def __init__(self, screen):
