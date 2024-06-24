@@ -1,8 +1,2 @@
 src/leaderboard.db
-src/__pycache__/enemy.cpython-38.pyc
-src/__pycache__/leaderboard.cpython-38.pyc
-src/__pycache__/map.cpython-38.pyc
-src/__pycache__/mouse.cpython-38.pyc
-src/__pycache__/player.cpython-38.pyc
-src/__pycache__/target.cpython-38.pyc
-src/__pycache__/target_vehicles.cpython-38.pyc
+src/__pycache__/

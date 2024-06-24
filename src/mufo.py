@@ -5,7 +5,7 @@ from pygame.math import Vector2
 from mouse import MouseControl
 from map import load_game_bg, draw_game_bg, update_bg_scroll, Building, House, Watertower, Circus, Grocery, Church, School
 from leaderboard import Result, Game, Score
-from target import Cow_1, Cow_2, Cow_3, Chicken_1, Chicken_2, Man_1, Man_2, Woman_1, Woman_2
+from target import Target_scroll, Cow_1, Cow_2, Cow_3, Chicken_1, Chicken_2, Man_1, Man_2, Woman_1, Woman_2
 from target_vehicles import Marquis_1_rear, Marquis_2_rear, Marquis_3_rear, Wagon_1_rear, Wagon_2_rear, Wagon_3_rear, Marquis_1, Marquis_2, Marquis_3, Wagon_1, Wagon_2, Wagon_3, Marquis_1_front, Marquis_2_front, Marquis_3_front, Wagon_1_front, Wagon_2_front, Wagon_3_front
 from enemy import Enemies
 from player import Ufo, Beam, Cow
@@ -810,7 +810,7 @@ def run_game():
     school = School('school', 3972, 3202)
     wheat = Building('wheat', 521, 3966)
 
-    cow_3_1 = Cow_3(400, 400, 2, 2)
+    cow_3_1 = Cow_3(800, 525, 2, 2)
 
     targets, target_vehicles = initialize_targets()
 
@@ -818,6 +818,10 @@ def run_game():
 
     while game_active:
         clock.tick(FPS)
+
+        screen_scroll = player.move(moving_left, moving_right, moving_up, moving_down, threshold_x, threshold_y)
+        # target_scroll = update_target_scroll(moving_left, moving_right)
+        bg_scroll = update_bg_scroll(bg_scroll, screen_scroll, bg_width, bg_height, SCREEN_WIDTH, SCREEN_HEIGHT)
 
         # Draw the game background
         draw_game_bg(screen, game_bg, bg_scroll)
@@ -925,9 +929,6 @@ def run_game():
         player.update()
         player.draw()
         
-        screen_scroll = player.move(moving_left, moving_right, moving_up, moving_down, threshold_x, threshold_y)
-        bg_scroll = update_bg_scroll(bg_scroll, screen_scroll, bg_width, bg_height, SCREEN_WIDTH, SCREEN_HEIGHT)
-
         # Process events
         for event in pygame.event.get():
             if event.type == pygame.QUIT:

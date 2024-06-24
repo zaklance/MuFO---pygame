@@ -1,12 +1,41 @@
 import pygame
 import os
 import random
+from pygame.math import Vector2
+from pygame.sprite import AbstractGroup
 from player import Character
+from settings import SCROLL_THRESH, SCREEN_WIDTH, SCREEN_HEIGHT, screen, screen_scroll, bg_scroll
 
 # Target Classes: 
 # Cows: Cow_1, Cow_2, Cow_3
 # Chickens: Chicken_1, Chicken_2
 # Civilians: Man_1, Man_2, Woman_1, Woman_2
+class Target_scroll(pygame.sprite.Group):
+    def __init__(self):
+        super().__init__()
+        self.offset = pygame.math.Vector2()
+        
+    def update_target_scroll(self, target):
+        self.offset.x = target.rect.centerx - SCREEN_WIDTH // 2
+        self.offset.y = target.rect.centery - SCREEN_HEIGHT // 2
+
+        for sprite in sorted(self.sprites(), key = lambda sprite: sprite.rect.centery):
+            offset_pos = sprite.rect.topleft - self.offset
+            screen.blit(sprite.image, offset_pos)
+
+
+
+
+
+
+
+        # if bg_scroll is None:
+        #     bg_scroll = Vector2(0 ,0)  # Initialize bg_scroll if it's None
+
+        # if screen_scroll is not None:  # Ensure screen_scroll is not None
+        #     bg_scroll -= screen_scroll
+
+        # return bg_scroll
 
 class Targets(pygame.sprite.Sprite):
     def __init__(self, x, y, scale, speed=0):
@@ -77,6 +106,7 @@ class Targets(pygame.sprite.Sprite):
                     self.move_counter *= -1
 
     def move(self, moving_left, moving_right): # , moving_up, moving_down
+        screen_scroll = Vector2(0, 0)
         dx = 0
         dy = 0
         if moving_left:
@@ -96,7 +126,8 @@ class Targets(pygame.sprite.Sprite):
         self.rect.x += dx
         self.rect.y += dy
 
-        
+        return screen_scroll
+   
     def update(self):
         # Update animation frames
         if pygame.time.get_ticks() - self.update_time > 100:
@@ -119,16 +150,10 @@ class Target_Object(pygame.sprite.Sprite):
 class Cows(Targets):
     def __init__(self, x, y, scale, speed):
         super().__init__(x, y, scale, speed)
-        self.dx = 0
-        self.dy = 0
 
 class Basic_Cow(Cows):
     def __init__(self, x, y, scale, speed):
         super().__init__(x, y, scale, speed)
-        self.dx = random.randint(-2, 2)
-        self.dy = random.randint(-2, 2)
-        self.x = x
-        self.y = y
 
 class Best_Cow(Cows):
     def __init__(self, x, y, scale, speed):
@@ -137,18 +162,10 @@ class Best_Cow(Cows):
 class Cow_1(Basic_Cow):
     def __init__(self, x, y, scale, speed):
         super().__init__(x, y, scale, speed)
-        self.dx = random.randint(-2, 2)
-        self.dy = random.randint(-2, 2)
-        self.x = x
-        self.y = y
 
 class Cow_2(Basic_Cow):
     def __init__(self, x, y, scale, speed):
         super().__init__(x, y, scale, speed)
-        self.dx = random.randint(-2, 2)
-        self.dy = random.randint(-2, 2)
-        self.x = x
-        self.y = y
 
 class Cow_3(Best_Cow):
     def __init__(self, x, y, scale, speed):
