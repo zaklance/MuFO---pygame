@@ -32,8 +32,8 @@ class Building(pygame.sprite.Sprite):
             self.image = pygame.transform.flip(self.image, True, False)
         self.rect = self.image.get_rect()
         self.rect.bottomleft = (x, y)
-    def draw(self, screen):
-        screen.blit(self.image, self.rect)
+    def draw(self, screen, bg_scroll):
+        screen.blit(self.image, ((self.rect.x + bg_scroll[0]), (self.rect.y + bg_scroll[1])))
 
 class House(Building):
     all_block = []

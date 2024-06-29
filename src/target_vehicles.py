@@ -75,9 +75,9 @@ class Target_vehicles(pygame.sprite.Sprite):
                 self.frame_index = 0
         self.image = self.animation_list[self.action][self.frame_index]
 
-    def draw(self, screen):
+    def draw(self, screen, bg_scroll):
         # Draw the target on the screen
-        screen.blit(self.image, self.rect)
+        screen.blit(pygame.transform.flip(self.image, self.flip, False), ((self.rect.x + bg_scroll[0]), (self.rect.y + bg_scroll[1])))
 
 class Marquis(Target_vehicles):
     def __init__(self, x, y, scale, speed):

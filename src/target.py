@@ -113,10 +113,12 @@ class Targets(pygame.sprite.Sprite):
             dx = -self.speed
             self.flip = True
             self.direction = -1
+            screen_scroll[0] = dx
         if moving_right:
             dx = self.speed
             self.flip = False
             self.direction = 1
+            screen_scroll[0] = dx
         # if moving_up:
         #     dy = -self.speed
         # if moving_down:
@@ -137,9 +139,10 @@ class Targets(pygame.sprite.Sprite):
                 self.frame_index = 0
         self.image = self.animation_list[self.action][self.frame_index]
 
-    def draw(self, screen):
+    def draw(self, screen, bg_scroll):
         # Draw the target on the screen
-        screen.blit(pygame.transform.flip(self.image, self.flip, False), self.rect)
+        screen.blit(pygame.transform.flip(self.image, self.flip, False), ((self.rect.x + bg_scroll[0]), (self.rect.y + bg_scroll[1])))
+
 
 class Target_Object(pygame.sprite.Sprite):
     def __init__(self, x, y, scale, speed):
