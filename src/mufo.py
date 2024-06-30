@@ -727,7 +727,6 @@ def run_game():
     game_bg = load_game_bg("assets/img/map/map-0.png")
     bg_width = game_bg.get_width()
     bg_height = game_bg.get_height()
-    field = load_game_bg("assets/img/map/map-1.png")
     # block_rect = 
 
     player_beam_down = Player_beam_down(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, 2, 5)
@@ -793,15 +792,15 @@ def run_game():
     # Row 5, Block 1
     house_1a_8 = House('house_1a', 1903, 2821)
     house_3b_4 = House('house_3b', 2092, 2822, True)
-    house_3a_5 = House('house_3a', 2282, 2827)
+    house_3a_5 = House('house_3a', 2282, 2823)
     # Row 5, Block 2
     house_1c_6 = House('house_1c', 2623, 2821, True)
-    house_3a_6 = House('house_3a', 2813, 2827)
+    house_3a_6 = House('house_3a', 2813, 2823)
     house_2a_4 = House('house_2a', 3002, 2823)
     house_1b_7 = House('house_1b', 3192, 2821)
     house_4a_7 = House('house_4a', 3571, 2824)
     house_2b_3 = House('house_2b', 3761, 2823, True)
-    house_3b_5 = House('house_3b', 3950, 2827)
+    house_3b_5 = House('house_3b', 3950, 2823)
     # Row 6, Block 1
     house_1a_9 = House('house_1a', 1524, 3180, True)
     house_4b_3 = House('house_4b', 2623, 3183, True)
@@ -825,7 +824,6 @@ def run_game():
 
         # Draw the game background
         draw_game_bg(screen, game_bg, bg_scroll)
-        draw_game_bg(screen, field, bg_scroll)
 
         # Always draw beam first so it appears behind the player
         player_beam_down.update(player.rect, targets.copy(), target_vehicles, current_score)
