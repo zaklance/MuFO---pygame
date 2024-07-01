@@ -5,7 +5,7 @@ from pygame.math import Vector2
 from mouse import MouseControl
 from map import load_game_bg, draw_game_bg, update_bg_scroll, Building, House, Watertower, Circus, Grocery, Church, School
 from leaderboard import Result, Game, Score
-from target import Target_scroll, Cow_1, Cow_2, Cow_3, Chicken_1, Chicken_2, Man_1, Man_2, Woman_1, Woman_2
+from target import Cow_1, Cow_2, Cow_3, Chicken_1, Chicken_2, Man_1, Man_2, Woman_1, Woman_2
 from target_vehicles import Marquis_1_rear, Marquis_2_rear, Marquis_3_rear, Wagon_1_rear, Wagon_2_rear, Wagon_3_rear, Marquis_1, Marquis_2, Marquis_3, Wagon_1, Wagon_2, Wagon_3, Marquis_1_front, Marquis_2_front, Marquis_3_front, Wagon_1_front, Wagon_2_front, Wagon_3_front
 from enemy import Enemies
 from player import Ufo, Beam, Cow
@@ -88,7 +88,7 @@ def initialize_targets():
     for position in civilian_positions:
         x, y = position
         civilian_type = random.choice(civilian_types)
-        civilian = civilian_type(x, y, civilians_scale, 5)
+        civilian = civilian_type(x, y, civilians_scale, 3)
         targets_group.add(civilian)
 
     chicken_positions = [
